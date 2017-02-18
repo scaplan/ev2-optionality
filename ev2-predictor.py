@@ -7,15 +7,26 @@ sys.setdefaultencoding('utf-8')
 import unicodedata
 from unicodedata import normalize
 
-def evalSentence(sentence):
-	for currWord, currPOS in sentence:
-		print currWord + ' ' + str(currPOS)
+def evalSentence(words, tags, sentenceWithTags):
+	if ("att" in words) and (tags.count("VB") > 1):
+		global numRetainedSentences
+		numRetainedSentences += 1
+
+		for currWord, currPOS in sentenceWithTags:
+			print currWord + ' ' + str(currPOS)
+
+	else:
+		global numDiscardedSentences
+		numDiscardedSentences += 1
 
 def interateCorpus(fileName):
 	totalTokens = 0
 	typeDict = {}
+
 	with open(fileName, 'r') as currFile:
 		currSentence = []
+		currTags = []
+		currSentenceWithPOS = []
 		for currLine in currFile:
 			if not currLine:
 				continue
@@ -24,8 +35,10 @@ def interateCorpus(fileName):
 				# we've finished the previous sentence so we should 
 				# pass the sentence to the evaluation function
 				# and then clear the "currSentence" list
-				evalSentence(currSentence)
+				evalSentence(currSentence, currTags, currSentenceWithPOS)
 				currSentence = []
+				currTags = []
+				currSentenceWithPOS = []
 
 			# check if we're reading in a word
 			if currLineTokens[0] == "<w":
@@ -33,6 +46,7 @@ def interateCorpus(fileName):
 				currWordRaw = currLineTokens[-1]
 
 				currWordClean = currWordRaw[currWordRaw.find(">")+1:currWordRaw.find("<")]
+				currWordClean = currWordClean.lower()
 				currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
 				currPair = (currWordClean, currPosClean)
 
@@ -41,7 +55,9 @@ def interateCorpus(fileName):
 				else:
 					typeDict[currWordRaw] = 1
 				totalTokens += 1
-				currSentence.append(currPair)
+				currSentence.append(currWordClean)
+				currTags.append(currPosClean)
+				currSentenceWithPOS.append(currPair)
 			# else continue
 			# print currLine
 	print (str(totalTokens) + ' total tokens')
@@ -51,10 +67,17 @@ def interateCorpus(fileName):
 ## Main method block
 ##
 if __name__=="__main__":
+
 	if (len(sys.argv) < 2):
 		print('incorrect number of arguments')
 		exit(0)
 
 	fileName = sys.argv[1]
+
+	numRetainedSentences = 0
+	numDiscardedSentences = 0
 	
 	interateCorpus(fileName)
+
+	print (str(numRetainedSentences) + " sentences contain overt \'att\' and multiple verbs")
+	print (str(numDiscardedSentences) + " sentences do not")
