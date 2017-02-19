@@ -32,29 +32,38 @@ def evalSentence(words, tags, sentenceWithTags):
 		nonControlCompInstances = findAll(words, 'att')
 		verbInstances = findAll(tags, 'VB')
 
-		# the lowest (linearly last) VB before "att" is matrix verb
-		# Highest (first) VB after "att" is relavent embedded verb
+		if len(verbInstances) > len(nonControlCompInstances):
+			if (len(nonControlCompInstances) > 1):
+				global multipleComp
+				multipleComp += 1
+			elif (len(nonControlCompInstances) == 1):
+				# just to keep things simple for now
+				global numRetainedSentences
+				numRetainedSentences += 1
+				compIndex = nonControlCompInstances[0]
+				matrixDomain = []
+				embeddedDomain = []
+				for verbIndex in verbInstances:
+					if verbIndex < compIndex:
+						matrixDomain.append(verbIndex)
+					else:
+						embeddedDomain.append(verbIndex)
+				if (len(matrixDomain) > 0 and len(embeddedDomain) > 0):
 
-		if (len(nonControlCompInstances) > 1):
-		 	print origSentence
-		 	global multipleComp
-		 	multipleComp += 1
 
+					matrixVerbIndex = matrixDomain[-1]
+					matrixVerb = words[matrixVerbIndex]
+					embeddedVerbIndex = embeddedDomain[0]
+					embeddedVerb = words[embeddedVerbIndex]
+					if (embeddedVerbIndex == (compIndex + 2)):
+						global numOptionalEv2
+						numOptionalEv2 += 1
+						print "ev2---:\t" + origSentence
+					else:
+						global numOptionalNonEinSitu
+						numOptionalNonEinSitu += 1
+						print "embed in situ---\t" + origSentence
 
-		# tags.count("VB") > 1)
-		
-
-		#if words.count('att') > 1:
-		# if len(compInstances) > 1:
-		# 	global multipleComp
-		# 	multipleComp += 1
-		# 	outString = ""
-		# 	for currWord, currPOS in sentenceWithTags:
-		# 		outString += currWord + " "
-		# 	print outString
-
-		global numRetainedSentences
-		numRetainedSentences += 1
 
 	#	for currWord, currPOS in sentenceWithTags:
 	#		print currWord + ' ' + str(currPOS)
@@ -120,10 +129,14 @@ if __name__=="__main__":
 
 	numRetainedSentences = 0
 	numDiscardedSentences = 0
+	numOptionalEv2 = 0
+	numOptionalNonEinSitu = 0
 	multipleComp = 0
 	
 	interateCorpus(fileName)
 
 	print (str(numRetainedSentences) + " sentences contain overt \'att\' and multiple verbs")
 	print (str(numDiscardedSentences) + " sentences do not")
-	print ('Multiple Complementizers: ' + str(multipleComp))
+	#print ('Multiple Complementizers: ' + str(multipleComp))
+	print(str(numOptionalEv2) + " optional ev2")
+	print(str(numOptionalNonEinSitu) + " embedded verb in situ")
