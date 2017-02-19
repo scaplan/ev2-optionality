@@ -7,13 +7,57 @@ sys.setdefaultencoding('utf-8')
 import unicodedata
 from unicodedata import normalize
 
+def findAll(lst, value):
+    return [i for i, x in enumerate(lst) if value==x]
+
 def evalSentence(words, tags, sentenceWithTags):
-	if ("att" in words) and (tags.count("VB") > 1):
+	compInstances = findAll(words, 'att')
+	origSentence = ""
+	for currWord in words:
+		origSentence += currWord + " "
+	if (len(compInstances) > 0):
+
+		# delete any instances of 'att' followed directly by VB (since that's a control structure rather than a complement)
+		for index in compInstances:
+			if index < len(words) - 1:
+				followingTag = tags[index+1]
+				if followingTag == "VB":
+					del words[index+1]
+					del words[index]
+					del tags[index+1]
+					del tags[index]
+					del sentenceWithTags[index+1]
+					del sentenceWithTags[index]
+
+		nonControlCompInstances = findAll(words, 'att')
+		verbInstances = findAll(tags, 'VB')
+
+		# the lowest (linearly last) VB before "att" is matrix verb
+		# Highest (first) VB after "att" is relavent embedded verb
+
+		if (len(nonControlCompInstances) > 1):
+		 	print origSentence
+		 	global multipleComp
+		 	multipleComp += 1
+
+
+		# tags.count("VB") > 1)
+		
+
+		#if words.count('att') > 1:
+		# if len(compInstances) > 1:
+		# 	global multipleComp
+		# 	multipleComp += 1
+		# 	outString = ""
+		# 	for currWord, currPOS in sentenceWithTags:
+		# 		outString += currWord + " "
+		# 	print outString
+
 		global numRetainedSentences
 		numRetainedSentences += 1
 
-		for currWord, currPOS in sentenceWithTags:
-			print currWord + ' ' + str(currPOS)
+	#	for currWord, currPOS in sentenceWithTags:
+	#		print currWord + ' ' + str(currPOS)
 
 	else:
 		global numDiscardedSentences
@@ -76,8 +120,10 @@ if __name__=="__main__":
 
 	numRetainedSentences = 0
 	numDiscardedSentences = 0
+	multipleComp = 0
 	
 	interateCorpus(fileName)
 
 	print (str(numRetainedSentences) + " sentences contain overt \'att\' and multiple verbs")
 	print (str(numDiscardedSentences) + " sentences do not")
+	print ('Multiple Complementizers: ' + str(multipleComp))
