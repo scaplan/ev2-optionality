@@ -7,10 +7,24 @@ sys.setdefaultencoding('utf-8')
 import unicodedata
 from unicodedata import normalize
 
+subjectWhitelist = {"NN":1,	# NN	Substantiv	Noun
+					"PM":1,	# PM	Egennamn	Proper Noun
+					"PN":1, # PN	Pronomen	Pronoun
+					"DT":1, # DT	Determinerare, bestämningsord	Determiner
+					"JJ":1,	# JJ	Adjektiv	Adjective
+					"PS":1,	# PS	Possessivuttryck	Possessive
+					"RG":1,	# RG	Räkneord: grundtal	Cardinal Number
+					"RO":1,	# RO	Räkneord: ordningstal	Ordinal Number
+					"HD":1,	# HD	Frågande/relativ bestämning	Interrogative/Relative Determiner
+					"HP":1,	# HP	Frågande/relativt pronomen	Interrogative/Relative Pronoun
+					}
+
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
 
 def evalSentence(words, tags, sentenceWithTags):
+	global numOptionalEv2
+	global numOptionalNonEinSitu
 	compInstances = findAll(words, 'att')
 	origSentence = ""
 	for currWord in words:
@@ -18,6 +32,7 @@ def evalSentence(words, tags, sentenceWithTags):
 	if (len(compInstances) > 0):
 
 		# delete any instances of 'att' followed directly by VB (since that's a control structure rather than a complement)
+
 		for index in compInstances:
 			if index < len(words) - 1:
 				followingTag = tags[index+1]
@@ -38,6 +53,8 @@ def evalSentence(words, tags, sentenceWithTags):
 				multipleComp += 1
 			elif (len(nonControlCompInstances) == 1):
 				# just to keep things simple for now
+				# this is considering only instances with one posited complementizer
+				# this was we don't have to figure out where the boundaries of too many different domains are
 				global numRetainedSentences
 				numRetainedSentences += 1
 				compIndex = nonControlCompInstances[0]
@@ -55,14 +72,35 @@ def evalSentence(words, tags, sentenceWithTags):
 					matrixVerb = words[matrixVerbIndex]
 					embeddedVerbIndex = embeddedDomain[0]
 					embeddedVerb = words[embeddedVerbIndex]
-					if (embeddedVerbIndex == (compIndex + 2)):
-						global numOptionalEv2
-						numOptionalEv2 += 1
-						print "ev2---:\t" + origSentence
-					else:
-						global numOptionalNonEinSitu
-						numOptionalNonEinSitu += 1
-						print "embed in situ---\t" + origSentence
+
+					# gather all the material between the compIndex and the embeddedVerbIndex
+					# check that it contains at least element from the subject whitelist
+					containsOvertSubject = False
+					for index in xrange(compIndex+1, embeddedVerbIndex):
+						if tags[index] in subjectWhitelist:
+							containsOvertSubject = True
+							break
+
+					if containsOvertSubject:
+					#	print "OvertSubj:\t" + origSentence
+						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
+						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
+						precedeVerbPOS = tags[embeddedVerbIndex - 1]
+						if (embeddedVerbIndex == (len(tags) - 1)):
+							followVerbPOS = ""
+						else:
+							followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
+						if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
+							if precedeVerbPOS == "AB":
+								numOptionalEv2 = numOptionalEv2 + 1
+								print "ev2:\t" + origSentence
+							else:
+								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
+								print "inSitu:\t" + origSentence
+						else:
+							print "can'tTell\t" + origSentence
+				#	else:
+				#		print "PRO:\t" + origSentence
 
 
 	#	for currWord, currPOS in sentenceWithTags:
