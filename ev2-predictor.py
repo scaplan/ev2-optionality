@@ -92,11 +92,11 @@ def evalSentence(words, tags, sentenceWithTags):
 							followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
 						if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
 							if precedeVerbPOS == "AB":
-								numOptionalEv2 = numOptionalEv2 + 1
-								print "ev2:\t" + origSentence
-							else:
 								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 								print "inSitu:\t" + origSentence
+							else:
+								numOptionalEv2 = numOptionalEv2 + 1
+								print "ev2:\t" + origSentence
 						else:
 							print "can'tTell\t" + origSentence
 				#	else:
