@@ -82,7 +82,7 @@ def evalSentence(words, tags, sentenceWithTags):
 							break
 
 					if containsOvertSubject:
-					#	print "OvertSubj:\t" + origSentence
+						print "OvertSubj:\t" + origSentence
 						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
 						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
 						precedeVerbPOS = tags[embeddedVerbIndex - 1]
@@ -93,14 +93,14 @@ def evalSentence(words, tags, sentenceWithTags):
 						if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
 							if precedeVerbPOS == "AB":
 								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
-								print "inSitu:\t" + origSentence
+					#			print "inSitu:\t" + origSentence
 							else:
 								numOptionalEv2 = numOptionalEv2 + 1
-								print "ev2:\t" + origSentence
-						else:
-							print "can'tTell\t" + origSentence
-				#	else:
-				#		print "PRO:\t" + origSentence
+					#			print "ev2:\t" + origSentence
+					#	else:
+					#		print "can'tTell\t" + origSentence
+					else:
+						print "PRO:\t" + origSentence
 
 
 	#	for currWord, currPOS in sentenceWithTags:

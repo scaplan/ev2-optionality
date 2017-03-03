@@ -5,11 +5,13 @@
 #resultSource='/home/spencer/Dropbox/penn_CS_account/ev2-optionality/output/'
 
 scriptSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/'
-directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/attasidor/'
+#directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/attasidor/'
+directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/flashback-politik/'
 resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
 
 declare -a corporaList
-corporaList=("attasidor")
+#corporaList=("attasidor")
+corporaList=("flashback-politik")
 
 cd $scriptSource
 
