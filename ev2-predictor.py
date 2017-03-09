@@ -22,29 +22,45 @@ subjectWhitelist = {"NN":1,	# NN	Substantiv	Noun
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
 
+def findAllComp(words, value, tags):
+	toReturn = []
+	for index, word in enumerate(words):
+		if word == 'att' and tags[index] == "SN":
+			toReturn.append(index)
+	return toReturn
+
 def evalSentence(words, tags, sentenceWithTags):
 	global numOptionalEv2
 	global numOptionalNonEinSitu
-	compInstances = findAll(words, 'att')
+	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
 		origSentence += currWord + " "
 	if (len(compInstances) > 0):
 
 		# delete any instances of 'att' followed directly by VB (since that's a control structure rather than a complement)
-
+		# also delete any instance of 'kommer att' since that's future marking rather than a complement
 		for index in compInstances:
 			if index < len(words) - 1:
 				followingTag = tags[index+1]
-				if followingTag == "VB":
+				precedingWord = words[index-1]
+				if precedingWord == "kommer":
+					del words[index]
+					del words[index-1]
+					del tags[index]
+					del tags[index-1]
+					del sentenceWithTags[index]
+					del sentenceWithTags[index-1]
+				elif followingTag == "VB":
 					del words[index+1]
 					del words[index]
 					del tags[index+1]
 					del tags[index]
 					del sentenceWithTags[index+1]
 					del sentenceWithTags[index]
+				
 
-		nonControlCompInstances = findAll(words, 'att')
+		nonControlCompInstances = findAllComp(words, 'att', tags)
 		verbInstances = findAll(tags, 'VB')
 
 		if len(verbInstances) > len(nonControlCompInstances):
@@ -82,7 +98,7 @@ def evalSentence(words, tags, sentenceWithTags):
 							break
 
 					if containsOvertSubject:
-						print "OvertSubj:\t" + origSentence
+				#		print "OvertSubj:\t" + origSentence
 						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
 						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
 						precedeVerbPOS = tags[embeddedVerbIndex - 1]
@@ -99,8 +115,8 @@ def evalSentence(words, tags, sentenceWithTags):
 					#			print "ev2:\t" + origSentence
 					#	else:
 					#		print "can'tTell\t" + origSentence
-					else:
-						print "PRO:\t" + origSentence
+				#	else:
+				#		print "PRO:\t" + origSentence
 
 
 	#	for currWord, currPOS in sentenceWithTags:

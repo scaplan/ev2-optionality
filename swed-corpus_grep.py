@@ -47,4 +47,5 @@ if __name__=="__main__":
 	searchString = sys.argv[1]
 	fileName = sys.argv[2]
 
+	searchString = searchString.lower()
 	corpusGrep(searchString, fileName)
