@@ -17,13 +17,14 @@ cd $scriptSource
 
 currCorpusSource=''
 
-for currCorpus in "${corporaList[@]}"; do
+for currCorpusName in "${corporaList[@]}"; do
 
-	currCorpus=$directorySource$currCorpus".xml"
-	outputStatsFile=$resultSource$currCorpus"_outputStats.txt"
-	outputEv2File=$resultSource$currCorpus"_ev2-vs-inSitu.txt"
-	echo 'Evaluating over: ' $currCorpus
+	currCorpusPath=$directorySource$currCorpusName".xml"
+	outputStatsFile=$resultSource$currCorpusName"_outputStats.txt"
+	outputEv2File=$resultSource$currCorpusName"_ev2-vs-inSitu.txt"
+	outputMatrixConditionsFile=$resultSource$currCorpusName"_matrixVerbs-condition.txt"
+	echo 'Evaluating over: ' $currCorpusPath
 
-	python ev2-predictor.py $currCorpus $outputStatsFile $outputEv2File 'True'
+	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsFile 'False'
 
 done

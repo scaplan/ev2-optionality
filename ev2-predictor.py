@@ -33,14 +33,9 @@ def findAllComp(words, value, tags):
 			toReturn.append(index)
 	return toReturn
 
-def evalSentence(words, tags, sentenceWithTags):
-	global numOptionalEv2
-	global numOptionalNonEinSitu
-	global proCases
-	global overtSubj
-	global cantTellRaised
-	global numDiscardedSentences
-	global matrixVerbTotalMap, matrixVerbECMap, matrixVerbeV2
+def evalSentence(words, tags, sentenceWithTags, outputEv2File):
+	global numOptionalEv2, numOptionalNonEinSitu, proCases, overtSubj
+	global cantTellRaised, numDiscardedSentences, matrixVerbTotalMap, matrixVerbECMap, matrixVerbeV2, verboseMode
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -140,14 +135,16 @@ def evalSentence(words, tags, sentenceWithTags):
 							#if precedeVerbPOS == "AB":
 							if precedeVerbWord == "inte":
 								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
-				#				print "inSitu:\t" + origSentence
+								if verboseMode:
+									outputEv2File.write("inSitu:\t" + origSentence + "\n")
 							else:
 								numOptionalEv2 = numOptionalEv2 + 1
 								if matrixVerb in matrixVerbeV2:
 									matrixVerbeV2[matrixVerb] = (matrixVerbeV2[matrixVerb] + 1)
 								else:
 									matrixVerbeV2[matrixVerb] = 1
-				#				print "ev2:\t" + origSentence
+								if verboseMode:
+									outputEv2File.write("ev2:\t" + origSentence + "\n")
 						else:
 							cantTellRaised += 1
 						#	print "can'tTell\t" + origSentence
@@ -164,65 +161,67 @@ def evalSentence(words, tags, sentenceWithTags):
 	else:
 		numDiscardedSentences += 1
 
-def interateCorpus(fileName):
+def iterateCorpus(inputName, outputName):
 	totalTokens = 0
 	typeDict = {}
 
-	with open(fileName, 'r') as currFile:
-		currSentence = []
-		currTags = []
-		currSentenceWithPOS = []
-		for currLine in currFile:
-			if not currLine:
-				continue
-			currLineTokens = currLine.split()
-			if currLineTokens[0] == "</sentence>":
-				# we've finished the previous sentence so we should 
-				# pass the sentence to the evaluation function
-				# and then clear the "currSentence" list
-				evalSentence(currSentence, currTags, currSentenceWithPOS)
-				currSentence = []
-				currTags = []
-				currSentenceWithPOS = []
+	with open(inputName, 'r') as currInputFile:
+		with open(outputName, 'w') as outputEv2File:
+			currSentence = []
+			currTags = []
+			currSentenceWithPOS = []
+			for currLine in currInputFile:
+				if not currLine:
+					continue
+				currLineTokens = currLine.split()
+				if currLineTokens[0] == "</sentence>":
+					# we've finished the previous sentence so we should 
+					# pass the sentence to the evaluation function
+					# and then clear the "currSentence" list
+					evalSentence(currSentence, currTags, currSentenceWithPOS, outputEv2File)
+					currSentence = []
+					currTags = []
+					currSentenceWithPOS = []
 
-			# check if we're reading in a word
-			if currLineTokens[0] == "<w":
-				currPosRaw = currLineTokens[1]
-				currWordRaw = currLineTokens[-1]
+				# check if we're reading in a word
+				if currLineTokens[0] == "<w":
+					currPosRaw = currLineTokens[1]
+					currWordRaw = currLineTokens[-1]
 
-				currWordClean = currWordRaw[currWordRaw.find(">")+1:currWordRaw.find("<")]
-				currWordClean = currWordClean.lower()
-				currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
-				currPair = (currWordClean, currPosClean)
+					currWordClean = currWordRaw[currWordRaw.find(">")+1:currWordRaw.find("<")]
+					currWordClean = currWordClean.lower()
+					currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
+					currPair = (currWordClean, currPosClean)
 
-				if (currWordRaw in typeDict):
-					typeDict[currWordRaw] = typeDict[currWordRaw] + 1
-				else:
-					typeDict[currWordRaw] = 1
-				totalTokens += 1
-				currSentence.append(currWordClean)
-				currTags.append(currPosClean)
-				currSentenceWithPOS.append(currPair)
-			# else continue
-			# print currLine
-	print (str(totalTokens) + ' total tokens')
-	print (str(len(typeDict)) + ' total types')
+					if (currWordRaw in typeDict):
+						typeDict[currWordRaw] = typeDict[currWordRaw] + 1
+					else:
+						typeDict[currWordRaw] = 1
+					totalTokens += 1
+					currSentence.append(currWordClean)
+					currTags.append(currPosClean)
+					currSentenceWithPOS.append(currPair)
+	outputEv2File.close()
+	outputStatsFile.write(str(totalTokens) + ' total tokens\n')
+	outputStatsFile.write(str(len(typeDict)) + ' total types\n')
 
 ##
 ## Main method block
 ##
 if __name__=="__main__":
 
-	if (len(sys.argv) < 5):
+	if (len(sys.argv) < 6):
 		print('incorrect number of arguments')
 		exit(0)
 
 	inputCorpus = sys.argv[1]
 	outputStatsPath = sys.argv[2]
 	outputEv2Path = sys.argv[3]
+	matrixConditionsPath = sys.argv[4]
 	verboseMode = False
-	if (sys.argv[4] == 'True'):
+	if (sys.argv[5] == 'True'):
 		verboseMode = True
+	print matrixConditionsPath
 
 	numRetainedSentences = 0
 	numDiscardedSentences = 0
@@ -236,40 +235,47 @@ if __name__=="__main__":
 	matrixVerbTotalMap = {}
 	matrixVerbECMap = {}
 	matrixVerbeV2 = {}
+
+	with open(outputStatsPath,'w') as outputStatsFile:
 	
-	interateCorpus(inputCorpus)
+		iterateCorpus(inputCorpus, outputEv2Path)
 
-	print (str(numRetainedSentences) + " candidate sentences (single overt complementizer)")
-	print (str(numDiscardedSentences) + " sentences discarded (no complementizer)")
-	print (str(multipleComp) + ' Multiple Complementizers')
-	print (str(proCases) + ' proCases')
-	print (str(overtSubj) + ' overtSubj')
-	print (str(numOptionalEv2) + " optional ev2")
-	print (str(numOptionalNonEinSitu) + " embedded verb in situ")
-	print (str(cantTellRaised) + " can't tell if raised")
+		outputStatsFile.write(str(numRetainedSentences) + " candidate sentences (single overt complementizer)\n")
+		outputStatsFile.write(str(numDiscardedSentences) + " sentences discarded (no complementizer)\n")
+		outputStatsFile.write(str(multipleComp) + ' Multiple Complementizers\n')
+		outputStatsFile.write(str(proCases) + ' proCases\n')
+		outputStatsFile.write(str(overtSubj) + ' overtSubj\n')
+		outputStatsFile.write(str(numOptionalEv2) + " optional ev2\n")
+		outputStatsFile.write(str(numOptionalNonEinSitu) + " embedded verb in situ\n")
+		outputStatsFile.write(str(cantTellRaised) + " can't tell if raised\n")
 
-	counter = 0
-	for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
-		verbCount = matrixVerbTotalMap[verb]
-		numEC = 0
-		ecGivenMatrix = 0.0
-		if verb in matrixVerbECMap:
-			numEC = matrixVerbECMap[verb]
-			ecGivenMatrix = (numEC / (verbCount * 1.0))
-		print (verb + " : " + str(verbCount) + " : " + str(numEC) + " --- " + str(ecGivenMatrix))
-		counter += 1
-		if counter > 1000:
-			break
+	outputStatsFile.close()
 
-	print "\n"
+	with open(matrixConditionsPath,'w') as matrixConditionsFile:
+		counter = 0
+		for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
+			verbCount = matrixVerbTotalMap[verb]
+			numEC = 0
+			ecGivenMatrix = 0.0
+			if verb in matrixVerbECMap:
+				numEC = matrixVerbECMap[verb]
+				ecGivenMatrix = (numEC / (verbCount * 1.0))
+			matrixConditionsFile.write(verb + " : " + str(verbCount) + " : " + str(numEC) + " --- " + str(ecGivenMatrix) + "\n")
+			counter += 1
+			if counter > 1000:
+				break
 
-	counter = 0
-	for matrixVerb in sorted(matrixVerbeV2, key=matrixVerbeV2.get, reverse=True):
-		verbCount = matrixVerbTotalMap[matrixVerb]
-		numEV2 = 0
-		ev2GivenMatrixVerbCount = matrixVerbeV2[matrixVerb]
-		ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
-		print (matrixVerb + " : " + str(verbCount) + " : " + str(ev2GivenMatrixVerbCount) + " --- " + str(ev2GivenMatrixVerbProb))
-		counter += 1
-		if counter > 1000:
-			break
+		matrixConditionsFile.write("--------------------\n")
+
+		counter = 0
+		for matrixVerb in sorted(matrixVerbeV2, key=matrixVerbeV2.get, reverse=True):
+			verbCount = matrixVerbTotalMap[matrixVerb]
+			numEV2 = 0
+			ev2GivenMatrixVerbCount = matrixVerbeV2[matrixVerb]
+			ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
+			matrixConditionsFile.write(matrixVerb + " : " + str(verbCount) + " : " + str(ev2GivenMatrixVerbCount) + " --- " + str(ev2GivenMatrixVerbProb) + "\n")
+			counter += 1
+			if counter > 1000:
+				break
+	matrixConditionsFile.close()
+	
