@@ -252,7 +252,6 @@ if __name__=="__main__":
 	outputStatsFile.close()
 
 	with open(matrixConditionsPath,'w') as matrixConditionsFile:
-		counter = 0
 		for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
 			verbCount = matrixVerbTotalMap[verb]
 			numEC = 0
@@ -260,22 +259,11 @@ if __name__=="__main__":
 			if verb in matrixVerbECMap:
 				numEC = matrixVerbECMap[verb]
 				ecGivenMatrix = (numEC / (verbCount * 1.0))
-			matrixConditionsFile.write(verb + " : " + str(verbCount) + " : " + str(numEC) + " --- " + str(ecGivenMatrix) + "\n")
-			counter += 1
-			if counter > 1000:
-				break
-
-		matrixConditionsFile.write("--------------------\n")
-
-		counter = 0
-		for matrixVerb in sorted(matrixVerbeV2, key=matrixVerbeV2.get, reverse=True):
-			verbCount = matrixVerbTotalMap[matrixVerb]
 			numEV2 = 0
-			ev2GivenMatrixVerbCount = matrixVerbeV2[matrixVerb]
+			ev2GivenMatrixVerbCount = 0
+			if verb in matrixVerbeV2:
+				ev2GivenMatrixVerbCount = matrixVerbeV2[verb]
 			ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
-			matrixConditionsFile.write(matrixVerb + " : " + str(verbCount) + " : " + str(ev2GivenMatrixVerbCount) + " --- " + str(ev2GivenMatrixVerbProb) + "\n")
-			counter += 1
-			if counter > 1000:
-				break
+			matrixConditionsFile.write(verb + " " + str(verbCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + "\n")
 	matrixConditionsFile.close()
 	
