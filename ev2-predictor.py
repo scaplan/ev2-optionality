@@ -19,6 +19,10 @@ subjectWhitelist = {"NN":1,	# NN	Substantiv	Noun
 					"HP":1,	# HP	Frågande/relativt pronomen	Interrogative/Relative Pronoun
 					}
 
+# msdBlacklist = {}
+
+# AB.POS, KOM, SUV (is good, better, best), as well as those with w/ nominal morphology: NOM, GEN, SMS, URT, NEU, MAS, SIN, PLU, IND, DEF.
+
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
 
@@ -32,6 +36,11 @@ def findAllComp(words, value, tags):
 def evalSentence(words, tags, sentenceWithTags):
 	global numOptionalEv2
 	global numOptionalNonEinSitu
+	global proCases
+	global overtSubj
+	global cantTellRaised
+	global numDiscardedSentences
+	global matrixVerbTotalMap
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -63,16 +72,24 @@ def evalSentence(words, tags, sentenceWithTags):
 		nonControlCompInstances = findAllComp(words, 'att', tags)
 		verbInstances = findAll(tags, 'VB')
 
+		# Add to verb totals
+		for verbIndex in verbInstances:
+			currVerb = words[verbIndex]
+			if currVerb in matrixVerbTotalMap:
+				matrixVerbTotalMap[currVerb] = (matrixVerbTotalMap[currVerb] + 1)
+			else:
+				matrixVerbTotalMap[currVerb] = 1
+
 		if len(verbInstances) > len(nonControlCompInstances):
 			if (len(nonControlCompInstances) > 1):
 				global multipleComp
 				multipleComp += 1
+				numDiscardedSentences += 1
 			elif (len(nonControlCompInstances) == 1):
 				# just to keep things simple for now
 				# this is considering only instances with one posited complementizer
 				# this was we don't have to figure out where the boundaries of too many different domains are
 				global numRetainedSentences
-				numRetainedSentences += 1
 				compIndex = nonControlCompInstances[0]
 				matrixDomain = []
 				embeddedDomain = []
@@ -98,32 +115,43 @@ def evalSentence(words, tags, sentenceWithTags):
 							break
 
 					if containsOvertSubject:
+						numRetainedSentences += 1
+						overtSubj += 1
 				#		print "OvertSubj:\t" + origSentence
+
 						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
 						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
 						precedeVerbPOS = tags[embeddedVerbIndex - 1]
+						precedeVerbWord = words[embeddedVerbIndex - 1]
 						if (embeddedVerbIndex == (len(tags) - 1)):
 							followVerbPOS = ""
+							followVerbWord = ""
 						else:
 							followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
-						if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
-							if precedeVerbPOS == "AB":
+							followVerbWord = words[embeddedVerbIndex + 1]
+						#if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
+						if ((precedeVerbWord == "inte") or (followVerbWord == "inte")):
+							#if precedeVerbPOS == "AB":
+							if precedeVerbWord == "inte":
 								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
-					#			print "inSitu:\t" + origSentence
+				#				print "inSitu:\t" + origSentence
 							else:
 								numOptionalEv2 = numOptionalEv2 + 1
-					#			print "ev2:\t" + origSentence
-					#	else:
-					#		print "can'tTell\t" + origSentence
-				#	else:
+				#				print "ev2:\t" + origSentence
+						else:
+							cantTellRaised += 1
+						#	print "can'tTell\t" + origSentence
+					else:
+						proCases += 1
 				#		print "PRO:\t" + origSentence
+		else:
+			numDiscardedSentences += 1
 
 
 	#	for currWord, currPOS in sentenceWithTags:
 	#		print currWord + ' ' + str(currPOS)
 
 	else:
-		global numDiscardedSentences
 		numDiscardedSentences += 1
 
 def interateCorpus(fileName):
@@ -186,11 +214,27 @@ if __name__=="__main__":
 	numOptionalEv2 = 0
 	numOptionalNonEinSitu = 0
 	multipleComp = 0
+	overtSubj = 0
+	proCases = 0
+	cantTellRaised = 0
+
+	matrixVerbTotalMap = {}
+	matrixVerbECMap = {}
 	
 	interateCorpus(fileName)
 
-	print (str(numRetainedSentences) + " sentences contain overt \'att\' and multiple verbs")
-	print (str(numDiscardedSentences) + " sentences do not")
-	#print ('Multiple Complementizers: ' + str(multipleComp))
+	print (str(numRetainedSentences) + " candidate sentences (single overt complementizer)")
+	print (str(numDiscardedSentences) + " sentences discarded (no complementizer)")
+	print (str(multipleComp) + ' Multiple Complementizers')
+	print (str(proCases) + ' proCases')
+	print (str(overtSubj) + ' overtSubj')
 	print(str(numOptionalEv2) + " optional ev2")
 	print(str(numOptionalNonEinSitu) + " embedded verb in situ")
+	print(str(cantTellRaised) + " can't tell if raised")
+
+	counter = 0
+	for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
+		print(verb + " : " + str(matrixVerbTotalMap[verb]))
+		counter += 1
+		if counter > 10:
+			break
