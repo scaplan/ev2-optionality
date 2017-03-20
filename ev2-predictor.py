@@ -40,7 +40,7 @@ def evalSentence(words, tags, sentenceWithTags):
 	global overtSubj
 	global cantTellRaised
 	global numDiscardedSentences
-	global matrixVerbTotalMap
+	global matrixVerbTotalMap, matrixVerbECMap, matrixVerbeV2
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -119,6 +119,12 @@ def evalSentence(words, tags, sentenceWithTags):
 						overtSubj += 1
 				#		print "OvertSubj:\t" + origSentence
 
+						# tabulate matrix verb information with embedded clause
+						if matrixVerb in matrixVerbECMap:
+							matrixVerbECMap[matrixVerb] = (matrixVerbECMap[matrixVerb] + 1)
+						else:
+							matrixVerbECMap[matrixVerb] = 1
+
 						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
 						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
 						precedeVerbPOS = tags[embeddedVerbIndex - 1]
@@ -137,6 +143,10 @@ def evalSentence(words, tags, sentenceWithTags):
 				#				print "inSitu:\t" + origSentence
 							else:
 								numOptionalEv2 = numOptionalEv2 + 1
+								if matrixVerb in matrixVerbeV2:
+									matrixVerbeV2[matrixVerb] = (matrixVerbeV2[matrixVerb] + 1)
+								else:
+									matrixVerbeV2[matrixVerb] = 1
 				#				print "ev2:\t" + origSentence
 						else:
 							cantTellRaised += 1
@@ -203,11 +213,16 @@ def interateCorpus(fileName):
 ##
 if __name__=="__main__":
 
-	if (len(sys.argv) < 2):
+	if (len(sys.argv) < 5):
 		print('incorrect number of arguments')
 		exit(0)
 
-	fileName = sys.argv[1]
+	inputCorpus = sys.argv[1]
+	outputStatsPath = sys.argv[2]
+	outputEv2Path = sys.argv[3]
+	verboseMode = False
+	if (sys.argv[4] == 'True'):
+		verboseMode = True
 
 	numRetainedSentences = 0
 	numDiscardedSentences = 0
@@ -220,21 +235,41 @@ if __name__=="__main__":
 
 	matrixVerbTotalMap = {}
 	matrixVerbECMap = {}
+	matrixVerbeV2 = {}
 	
-	interateCorpus(fileName)
+	interateCorpus(inputCorpus)
 
 	print (str(numRetainedSentences) + " candidate sentences (single overt complementizer)")
 	print (str(numDiscardedSentences) + " sentences discarded (no complementizer)")
 	print (str(multipleComp) + ' Multiple Complementizers')
 	print (str(proCases) + ' proCases')
 	print (str(overtSubj) + ' overtSubj')
-	print(str(numOptionalEv2) + " optional ev2")
-	print(str(numOptionalNonEinSitu) + " embedded verb in situ")
-	print(str(cantTellRaised) + " can't tell if raised")
+	print (str(numOptionalEv2) + " optional ev2")
+	print (str(numOptionalNonEinSitu) + " embedded verb in situ")
+	print (str(cantTellRaised) + " can't tell if raised")
 
 	counter = 0
 	for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
-		print(verb + " : " + str(matrixVerbTotalMap[verb]))
+		verbCount = matrixVerbTotalMap[verb]
+		numEC = 0
+		ecGivenMatrix = 0.0
+		if verb in matrixVerbECMap:
+			numEC = matrixVerbECMap[verb]
+			ecGivenMatrix = (numEC / (verbCount * 1.0))
+		print (verb + " : " + str(verbCount) + " : " + str(numEC) + " --- " + str(ecGivenMatrix))
 		counter += 1
-		if counter > 10:
+		if counter > 1000:
+			break
+
+	print "\n"
+
+	counter = 0
+	for matrixVerb in sorted(matrixVerbeV2, key=matrixVerbeV2.get, reverse=True):
+		verbCount = matrixVerbTotalMap[matrixVerb]
+		numEV2 = 0
+		ev2GivenMatrixVerbCount = matrixVerbeV2[matrixVerb]
+		ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
+		print (matrixVerb + " : " + str(verbCount) + " : " + str(ev2GivenMatrixVerbCount) + " --- " + str(ev2GivenMatrixVerbProb))
+		counter += 1
+		if counter > 1000:
 			break
