@@ -22,9 +22,12 @@ for currCorpusName in "${corporaList[@]}"; do
 	currCorpusPath=$directorySource$currCorpusName".xml"
 	outputStatsFile=$resultSource$currCorpusName"_outputStats.txt"
 	outputEv2File=$resultSource$currCorpusName"_ev2-vs-inSitu.txt"
-	outputMatrixConditionsFile=$resultSource$currCorpusName"_matrixVerbs-condition-relation.txt"
+	outputMatrixConditionsFile=$resultSource$currCorpusName"_matrixVerbs-condition-relation.csv"
+	outputPlotFile=$resultSource$currCorpusName"_plot.png"
 	echo 'Evaluating over: ' $currCorpusPath
 
-	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsFile 'False'
+#	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsFile 'False'
+
+	Rscript plotCondProb.R $outputMatrixConditionsFile $outputPlotFile
 
 done

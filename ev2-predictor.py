@@ -252,6 +252,7 @@ if __name__=="__main__":
 	outputStatsFile.close()
 
 	with open(matrixConditionsPath,'w') as matrixConditionsFile:
+		matrixConditionsFile.write('verb totalCount numEC ecGivenMatrix ev2GivenMatrix ev2GivenMatrixProb\n')
 		for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
 			verbCount = matrixVerbTotalMap[verb]
 			numEC = 0
