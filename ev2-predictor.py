@@ -35,11 +35,21 @@ def findAllComp(words, value, tags):
 
 def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 	global numOptionalEv2, numOptionalNonEinSitu, proCases, overtSubj
-	global cantTellRaised, numDiscardedSentences, matrixVerbTotalMap, matrixVerbECMap, matrixVerbeV2, verboseMode
+	global cantTellRaised, numDiscardedSentences, matrixVerbAttTotalMap, matrixVerbECMap, matrixVerbeV2, verboseMode
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
 		origSentence += currWord + " "
+
+	verbInstances = findAll(tags, 'VB')
+	# Add to verb totals
+	for verbIndex in verbInstances:
+		currVerb = words[verbIndex]
+		if currVerb in matrixVerbFullTotalMap:
+			matrixVerbFullTotalMap[currVerb] = (matrixVerbFullTotalMap[currVerb] + 1)
+		else:
+			matrixVerbFullTotalMap[currVerb] = 1
+
 	if (len(compInstances) > 0):
 
 		# delete any instances of 'att' followed directly by VB (since that's a control structure rather than a complement)
@@ -70,10 +80,10 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 		# Add to verb totals
 		for verbIndex in verbInstances:
 			currVerb = words[verbIndex]
-			if currVerb in matrixVerbTotalMap:
-				matrixVerbTotalMap[currVerb] = (matrixVerbTotalMap[currVerb] + 1)
+			if currVerb in matrixVerbAttTotalMap:
+				matrixVerbAttTotalMap[currVerb] = (matrixVerbAttTotalMap[currVerb] + 1)
 			else:
-				matrixVerbTotalMap[currVerb] = 1
+				matrixVerbAttTotalMap[currVerb] = 1
 
 		if len(verbInstances) > len(nonControlCompInstances):
 			if (len(nonControlCompInstances) > 1):
@@ -232,7 +242,8 @@ if __name__=="__main__":
 	proCases = 0
 	cantTellRaised = 0
 
-	matrixVerbTotalMap = {}
+	matrixVerbAttTotalMap = {}
+	matrixVerbFullTotalMap = {}
 	matrixVerbECMap = {}
 	matrixVerbeV2 = {}
 
@@ -252,20 +263,24 @@ if __name__=="__main__":
 	outputStatsFile.close()
 
 	with open(matrixConditionsPath,'w') as matrixConditionsFile:
-		matrixConditionsFile.write('verb totalCount numEC ecGivenMatrix ev2GivenMatrix ev2GivenMatrixProb\n')
-		for verb in sorted(matrixVerbTotalMap, key=matrixVerbTotalMap.get, reverse=True):
-			verbCount = matrixVerbTotalMap[verb]
+		matrixConditionsFile.write('verb totalCount(all) totalCount(att) numEC ecGivenMatrix ev2GivenMatrix ev2GivenMatrixProb\n')
+		for verb in sorted(matrixVerbAttTotalMap, key=matrixVerbAttTotalMap.get, reverse=True):
+			verbCountAtt = matrixVerbAttTotalMap[verb]
+			verbCountAll = matrixVerbFullTotalMap[verb]
 			numEC = 0
 			ecGivenMatrix = 0.0
 			if verb in matrixVerbECMap:
 				numEC = matrixVerbECMap[verb]
-				ecGivenMatrix = (numEC / (verbCount * 1.0))
+				#ecGivenMatrix = (numEC / (verbCountAtt * 1.0))
+				ecGivenMatrix = (numEC / (verbCountAll * 1.0))
 			numEV2 = 0
 			ev2GivenMatrixVerbCount = 0
 			if verb in matrixVerbeV2:
 				ev2GivenMatrixVerbCount = matrixVerbeV2[verb]
-			#ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
-			ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (numEC * 1.0))
-			matrixConditionsFile.write(verb + " " + str(verbCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + "\n")
+			#ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCountAtt * 1.0))
+			ev2GivenMatrixVerbProb = 0.0
+			if numEC != 0:
+				ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (numEC * 1.0))
+			matrixConditionsFile.write(verb + " " + str(verbCountAll) + " " + str(verbCountAtt) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + "\n")
 	matrixConditionsFile.close()
 	

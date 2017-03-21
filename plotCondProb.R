@@ -23,10 +23,10 @@ colnames(data)
 cat(sprintf("Total verbs: %s\n", nrow(data)))
 #print(data$ev2GivenMatrix)
 
-dataCleanMin1 <- data[data[,5]!=0,]
-dataCleanMin2 <- data[data[,5]>1,]
-dataCleanMin5 <- data[data[,5]>4,]
-dataCleanMin10 <- data[data[,5]>9,]
+dataCleanMin1 <- data[data[,6]!=0,]
+dataCleanMin2 <- data[data[,6]>1,]
+dataCleanMin5 <- data[data[,6]>4,]
+dataCleanMin10 <- data[data[,6]>9,]
 cat(sprintf("Verbs with ev2 at least once: %s\n", nrow(dataCleanMin1)))
 cat(sprintf("Verbs with ev2 at least twice: %s\n", nrow(dataCleanMin2)))
 cat(sprintf("Verbs with ev2 at least five times: %s\n", nrow(dataCleanMin5)))
