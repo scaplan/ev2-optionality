@@ -17,6 +17,8 @@ output_nameMin10 = paste(output_name,'_min10.png',sep="")
 ## Read in data
 data=read.csv(orig_csv,header=T,sep = "")
 
+#data$ev2GivenMatrixCorrectProb=data$ev2GivenMatrix/data$numEC
+
 colnames(data)
 cat(sprintf("Total verbs: %s\n", nrow(data)))
 #print(data$ev2GivenMatrix)
@@ -29,6 +31,15 @@ cat(sprintf("Verbs with ev2 at least once: %s\n", nrow(dataCleanMin1)))
 cat(sprintf("Verbs with ev2 at least twice: %s\n", nrow(dataCleanMin2)))
 cat(sprintf("Verbs with ev2 at least five times: %s\n", nrow(dataCleanMin5)))
 cat(sprintf("Verbs with ev2 at least five times: %s\n", nrow(dataCleanMin10)))
+
+# dataCleanMin1$logEcGivenMatrix = log(dataCleanMin1$ecGivenMatrix)
+# dataCleanMin1$logEv2GivenMatrixProb = log(dataCleanMin1$ev2GivenMatrixCorrectProb)
+# dataCleanMin2$logEcGivenMatrix = log(dataCleanMin2$ecGivenMatrix)
+# dataCleanMin2$logEv2GivenMatrixProb = log(dataCleanMin2$ev2GivenMatrixCorrectProb)
+# dataCleanMin5$logEcGivenMatrix = log(dataCleanMin5$ecGivenMatrix)
+# dataCleanMin5$logEv2GivenMatrixProb = log(dataCleanMin5$ev2GivenMatrixCorrectProb)
+# dataCleanMin10$logEcGivenMatrix = log(dataCleanMin10$ecGivenMatrix)
+# dataCleanMin10$logEv2GivenMatrixProb = log(dataCleanMin10$ev2GivenMatrixCorrectProb)
 
 dataCleanMin1$logEcGivenMatrix = log(dataCleanMin1$ecGivenMatrix)
 dataCleanMin1$logEv2GivenMatrixProb = log(dataCleanMin1$ev2GivenMatrixProb)

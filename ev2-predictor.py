@@ -264,7 +264,8 @@ if __name__=="__main__":
 			ev2GivenMatrixVerbCount = 0
 			if verb in matrixVerbeV2:
 				ev2GivenMatrixVerbCount = matrixVerbeV2[verb]
-			ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
+			#ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCount * 1.0))
+			ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (numEC * 1.0))
 			matrixConditionsFile.write(verb + " " + str(verbCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + "\n")
 	matrixConditionsFile.close()
 	
