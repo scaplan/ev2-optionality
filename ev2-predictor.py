@@ -33,9 +33,10 @@ def findAllComp(words, value, tags):
 			toReturn.append(index)
 	return toReturn
 
-def evalSentence(words, tags, sentenceWithTags, outputEv2File):
+def evalSentence(words, lemmas, tags, sentenceWithTags, outputEv2File):
 	global numOptionalEv2, numOptionalNonEinSitu, proCases, overtSubj
-	global cantTellRaised, numDiscardedSentences, matrixVerbAttTotalMap, matrixVerbECMap, matrixVerbeV2, verboseMode
+	global cantTellRaised, numDiscardedSentences, matrixVerbECMap, matrixVerbeV2, verboseMode, allVerbFullTotalMap, allLemmaFullTotalMap
+	global matrixLemmaECMap, matrixLemmaeV2, embedVerbeV2, embedLemmaeV2, totalEmbedVerbMap, totalEmbedLemmaMap, highestEmbedVerbMap, highestEmbedLemmaMap
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -45,10 +46,9 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 	# Add to verb totals
 	for verbIndex in verbInstances:
 		currVerb = words[verbIndex]
-		if currVerb in matrixVerbFullTotalMap:
-			matrixVerbFullTotalMap[currVerb] = (matrixVerbFullTotalMap[currVerb] + 1)
-		else:
-			matrixVerbFullTotalMap[currVerb] = 1
+		currLemma = lemmas[verbIndex]
+		allVerbFullTotalMap = updateCountMap(allVerbFullTotalMap, currVerb)
+		allLemmaFullTotalMap = updateCountMap(allLemmaFullTotalMap, currLemma)
 
 	if (len(compInstances) > 0):
 
@@ -77,14 +77,6 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 		nonControlCompInstances = findAllComp(words, 'att', tags)
 		verbInstances = findAll(tags, 'VB')
 
-		# Add to verb totals
-		for verbIndex in verbInstances:
-			currVerb = words[verbIndex]
-			if currVerb in matrixVerbAttTotalMap:
-				matrixVerbAttTotalMap[currVerb] = (matrixVerbAttTotalMap[currVerb] + 1)
-			else:
-				matrixVerbAttTotalMap[currVerb] = 1
-
 		if len(verbInstances) > len(nonControlCompInstances):
 			if (len(nonControlCompInstances) > 1):
 				global multipleComp
@@ -103,13 +95,17 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 						matrixDomain.append(verbIndex)
 					else:
 						embeddedDomain.append(verbIndex)
+						totalEmbedVerbMap = updateCountMap(totalEmbedVerbMap, words[verbIndex])
+						totalEmbedLemmaMap = updateCountMap(totalEmbedLemmaMap, lemmas[verbIndex])
 				if (len(matrixDomain) > 0 and len(embeddedDomain) > 0):
 
 
 					matrixVerbIndex = matrixDomain[-1]
 					matrixVerb = words[matrixVerbIndex]
+					matrixLemma = lemmas[matrixVerbIndex]
 					embeddedVerbIndex = embeddedDomain[0]
 					embeddedVerb = words[embeddedVerbIndex]
+					embeddedLemma = lemmas[embeddedVerbIndex]
 
 					# gather all the material between the compIndex and the embeddedVerbIndex
 					# check that it contains at least element from the subject whitelist
@@ -125,10 +121,22 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 				#		print "OvertSubj:\t" + origSentence
 
 						# tabulate matrix verb information with embedded clause
-						if matrixVerb in matrixVerbECMap:
-							matrixVerbECMap[matrixVerb] = (matrixVerbECMap[matrixVerb] + 1)
-						else:
-							matrixVerbECMap[matrixVerb] = 1
+						matrixVerbECMap = updateCountMap(matrixVerbECMap, matrixVerb)
+						matrixLemmaECMap = updateCountMap(matrixLemmaECMap, matrixLemma)
+
+						# Search over embedded subject domain (between 'att' and the highest embedded verb) for 'som' (or what 'som' is tagged as)
+						# if 'som' is found then there's a relative clause subject -- and I need to set the embedded verb to be the second verb
+						for index in xrange(compIndex+1, embeddedVerbIndex):
+							if words[index] == 'som':
+								# newly set embeddedVerbIndex and embeddedVerb
+								if len(embeddedDomain) > 1:
+									embeddedVerbIndex = embeddedDomain[1]
+									embeddedVerb = words[embeddedVerbIndex]
+									embeddedLemma = lemmas[embeddedVerbIndex]
+								#print "HP_NON: " + origSentence
+
+						highestEmbedVerbMap = updateCountMap(highestEmbedVerbMap, embeddedVerb)
+						highestEmbedLemmaMap = updateCountMap(highestEmbedLemmaMap, embeddedLemma)
 
 						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
 						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
@@ -148,11 +156,12 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 								if verboseMode:
 									outputEv2File.write("inSitu:\t" + origSentence + "\n")
 							else:
-								numOptionalEv2 = numOptionalEv2 + 1
-								if matrixVerb in matrixVerbeV2:
-									matrixVerbeV2[matrixVerb] = (matrixVerbeV2[matrixVerb] + 1)
-								else:
-									matrixVerbeV2[matrixVerb] = 1
+								numOptionalEv2 += 1
+								matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
+								matrixLemmaeV2 = updateCountMap(matrixLemmaeV2, matrixLemma)
+								embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
+								embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
+
 								if verboseMode:
 									outputEv2File.write("ev2:\t" + origSentence + "\n")
 						else:
@@ -171,6 +180,25 @@ def evalSentence(words, tags, sentenceWithTags, outputEv2File):
 	else:
 		numDiscardedSentences += 1
 
+def updateCountMap(inputMap, inputEntry):
+	if inputEntry in inputMap:
+		inputMap[inputEntry] = (inputMap[inputEntry] + 1)
+	else:
+		inputMap[inputEntry] = 1
+	return inputMap
+
+def accessDictEntry(dictToCheck, entryToCheck):
+	if entryToCheck in dictToCheck:
+		return dictToCheck[entryToCheck]
+	else:
+		return 0
+
+def safeDivide(numerator, denominator):
+	if denominator > 0:
+		return (numerator / (denominator * 1.0))
+	else:
+		return 0.0
+
 def iterateCorpus(inputName, outputName):
 	totalTokens = 0
 	typeDict = {}
@@ -178,6 +206,7 @@ def iterateCorpus(inputName, outputName):
 	with open(inputName, 'r') as currInputFile:
 		with open(outputName, 'w') as outputEv2File:
 			currSentence = []
+			currLemmas = []
 			currTags = []
 			currSentenceWithPOS = []
 			for currLine in currInputFile:
@@ -188,18 +217,28 @@ def iterateCorpus(inputName, outputName):
 					# we've finished the previous sentence so we should 
 					# pass the sentence to the evaluation function
 					# and then clear the "currSentence" list
-					evalSentence(currSentence, currTags, currSentenceWithPOS, outputEv2File)
+					evalSentence(currSentence, currLemmas, currTags, currSentenceWithPOS, outputEv2File)
 					currSentence = []
+					currLemmas = []
 					currTags = []
 					currSentenceWithPOS = []
 
 				# check if we're reading in a word
 				if currLineTokens[0] == "<w":
 					currPosRaw = currLineTokens[1]
+					currLemmaRaw = currLineTokens[3]
 					currWordRaw = currLineTokens[-1]
 
 					currWordClean = currWordRaw[currWordRaw.find(">")+1:currWordRaw.find("<")]
 					currWordClean = currWordClean.lower()
+
+					# if currLemmaRaw contains two pipes, then extract between the pipes
+					# otherwise there's no lemma entry, so set (currLemmaClean = currWordClean)
+					currLemmaClean = currWordClean
+					if currLemmaRaw.count('|') == 2:
+						currLemmaParts = currLemmaRaw.split('|')
+						currLemmaClean = currLemmaParts[1]
+
 					currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
 					currPair = (currWordClean, currPosClean)
 
@@ -209,6 +248,7 @@ def iterateCorpus(inputName, outputName):
 						typeDict[currWordRaw] = 1
 					totalTokens += 1
 					currSentence.append(currWordClean)
+					currLemmas.append(currLemmaClean)
 					currTags.append(currPosClean)
 					currSentenceWithPOS.append(currPair)
 	outputEv2File.close()
@@ -227,11 +267,11 @@ if __name__=="__main__":
 	inputCorpus = sys.argv[1]
 	outputStatsPath = sys.argv[2]
 	outputEv2Path = sys.argv[3]
-	matrixConditionsPath = sys.argv[4]
+	matrixConditionsVerbPath = sys.argv[4]
 	verboseMode = False
-	if (sys.argv[5] == 'True'):
+	matrixConditionsLemmaPath = sys.argv[5]
+	if (sys.argv[6] == 'True'):
 		verboseMode = True
-	print matrixConditionsPath
 
 	numRetainedSentences = 0
 	numDiscardedSentences = 0
@@ -242,10 +282,22 @@ if __name__=="__main__":
 	proCases = 0
 	cantTellRaised = 0
 
-	matrixVerbAttTotalMap = {}
-	matrixVerbFullTotalMap = {}
+	allVerbFullTotalMap = {}
+	allLemmaFullTotalMap = {}
+
 	matrixVerbECMap = {}
+	matrixLemmaECMap = {}
+
+	totalEmbedVerbMap = {}
+	totalEmbedLemmaMap = {}
+	highestEmbedVerbMap = {}
+	highestEmbedLemmaMap = {}
+
 	matrixVerbeV2 = {}
+	matrixLemmaeV2 = {}
+	embedVerbeV2 = {}
+	embedLemmaeV2 = {}
+
 
 	with open(outputStatsPath,'w') as outputStatsFile:
 	
@@ -262,25 +314,49 @@ if __name__=="__main__":
 
 	outputStatsFile.close()
 
-	with open(matrixConditionsPath,'w') as matrixConditionsFile:
-		matrixConditionsFile.write('verb totalCount(all) totalCount(att) numEC ecGivenMatrix ev2GivenMatrix ev2GivenMatrixProb\n')
-		for verb in sorted(matrixVerbAttTotalMap, key=matrixVerbAttTotalMap.get, reverse=True):
-			verbCountAtt = matrixVerbAttTotalMap[verb]
-			verbCountAll = matrixVerbFullTotalMap[verb]
-			numEC = 0
-			ecGivenMatrix = 0.0
-			if verb in matrixVerbECMap:
-				numEC = matrixVerbECMap[verb]
-				#ecGivenMatrix = (numEC / (verbCountAtt * 1.0))
-				ecGivenMatrix = (numEC / (verbCountAll * 1.0))
-			numEV2 = 0
-			ev2GivenMatrixVerbCount = 0
-			if verb in matrixVerbeV2:
-				ev2GivenMatrixVerbCount = matrixVerbeV2[verb]
-			#ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (verbCountAtt * 1.0))
-			ev2GivenMatrixVerbProb = 0.0
-			if numEC != 0:
-				ev2GivenMatrixVerbProb = (ev2GivenMatrixVerbCount / (numEC * 1.0))
-			matrixConditionsFile.write(verb + " " + str(verbCountAll) + " " + str(verbCountAtt) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + "\n")
+#	1		2					3				4						5
+#	verb	allCount			NonEmbedCount	numEC					p(ec|matrix)
+#	verb	allVerbFullTotalMap	(all-embed)		matrixVerbECMap			numEC/(allVerbFullTotalMap - totalEmbedVerbMap)
+
+#	6						7								8						9					10
+#	ev2GivenMatrixVerbCount	p(ev2|matrix)					highestEmbedVerbCount	ev2GivenEmbedCount	p(ev2|embed)
+#	matrixVerbeV2			ev2GivenMatrixVerbCount/numEC	highestEmbedVerbMap		embedVerbeV2		embedVerbeV2/highestEmbedVerbMap
+
+	with open(matrixConditionsVerbPath,'w') as matrixConditionsFile:
+		matrixConditionsFile.write('1.verb 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.c(ev2|matrix) 7.p(ev2|matrix) 8.highestEmbedVerbCount 9.c(ev2|embed) 10.p(ev2|embed)\n')
+		for verb in sorted(allVerbFullTotalMap, key=allVerbFullTotalMap.get, reverse=True):
+			verbCountAll = allVerbFullTotalMap[verb]
+			verbEmbedCount = accessDictEntry(totalEmbedVerbMap, verb)
+			verbNonEmbedCount = verbCountAll - verbEmbedCount
+			highestEmbedVerbCount = accessDictEntry(highestEmbedVerbMap, verb)
+			ev2GivenEmbedCount = accessDictEntry(embedVerbeV2, verb)
+			ev2GivenEmbedVerbProb = safeDivide(ev2GivenEmbedCount, highestEmbedVerbCount)
+
+			numEC = accessDictEntry(matrixVerbECMap, verb)
+			ecGivenMatrix = safeDivide(numEC, verbNonEmbedCount)
+			ev2GivenMatrixVerbCount = accessDictEntry(matrixVerbeV2, verb)
+			ev2GivenMatrixVerbProb = safeDivide(ev2GivenMatrixVerbCount, numEC)
+
+			matrixConditionsFile.write(verb + " " + str(verbCountAll) + " " + str(verbNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " ")
+			matrixConditionsFile.write(str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + " " + str(highestEmbedVerbCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedVerbProb) + "\n")
 	matrixConditionsFile.close()
 	
+	# output lemma file here
+	with open(matrixConditionsLemmaPath,'w') as matrixConditionsFile:
+		matrixConditionsFile.write('1.lemma 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.c(ev2|matrix) 7.p(ev2|matrix) 8.highestEmbedVerbCount 9.c(ev2|embed) 10.p(ev2|embed)\n')
+		for lemma in sorted(allLemmaFullTotalMap, key=allLemmaFullTotalMap.get, reverse=True):
+			lemmaCountAll = allLemmaFullTotalMap[lemma]
+			lemmaEmbedCount = accessDictEntry(totalEmbedLemmaMap, lemma)
+			lemmaNonEmbedCount = lemmaCountAll - lemmaEmbedCount
+			highestEmbedLemmaCount = accessDictEntry(highestEmbedLemmaMap, lemma)
+			ev2GivenEmbedCount = accessDictEntry(embedLemmaeV2, lemma)
+			ev2GivenEmbedLemmaProb = safeDivide(ev2GivenEmbedCount, highestEmbedLemmaCount)
+
+			numEC = accessDictEntry(matrixLemmaECMap, lemma)
+			ecGivenMatrix = safeDivide(numEC, lemmaNonEmbedCount)
+			ev2GivenMatrixLemmaCount = accessDictEntry(matrixLemmaeV2, lemma)
+			ev2GivenMatrixLemmaProb = safeDivide(ev2GivenMatrixLemmaCount, numEC)
+
+			matrixConditionsFile.write(lemma + " " + str(lemmaCountAll) + " " + str(lemmaNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " ")
+			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(highestEmbedLemmaCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
+	matrixConditionsFile.close()
