@@ -33,7 +33,7 @@ def findAllComp(words, value, tags):
 			toReturn.append(index)
 	return toReturn
 
-def evalSentence(words, lemmas, tags, sentenceWithTags, outputEv2File):
+def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 	global numOptionalEv2, numOptionalNonEinSitu, proCases, overtSubj
 	global cantTellRaised, numDiscardedSentences, matrixVerbECMap, matrixVerbeV2, verboseMode, allVerbFullTotalMap, allLemmaFullTotalMap
 	global matrixLemmaECMap, matrixLemmaeV2, embedVerbeV2, embedLemmaeV2, totalEmbedVerbMap, totalEmbedLemmaMap, highestEmbedVerbMap, highestEmbedLemmaMap
@@ -128,45 +128,57 @@ def evalSentence(words, lemmas, tags, sentenceWithTags, outputEv2File):
 						# if 'som' is found then there's a relative clause subject -- and I need to set the embedded verb to be the second verb
 						for index in xrange(compIndex+1, embeddedVerbIndex):
 							if words[index] == 'som':
+						#		print 'relClsSub: ' + origSentence
+						#		print '--OldEmbed--: ' + embeddedVerb
 								# newly set embeddedVerbIndex and embeddedVerb
+								embeddedVerbIndex = -1
+						#		print embeddedDomain
 								if len(embeddedDomain) > 1:
-									embeddedVerbIndex = embeddedDomain[1]
-									embeddedVerb = words[embeddedVerbIndex]
-									embeddedLemma = lemmas[embeddedVerbIndex]
-								#print "HP_NON: " + origSentence
+									for embedIndexCheck in xrange(1,len(embeddedDomain)):
+						#				print embedIndexCheck, words[embeddedDomain[embedIndexCheck]], msds[embeddedDomain[embedIndexCheck]]
+										if 'INF' not in msds[embeddedDomain[embedIndexCheck]] and 'SUP' not in msds[embeddedDomain[embedIndexCheck]]:
+											embeddedVerbIndex = embeddedDomain[embedIndexCheck]
+											embeddedVerb = words[embeddedVerbIndex]
+											embeddedLemma = lemmas[embeddedVerbIndex]
+											break
+						#		if embeddedVerbIndex != -1:
+						#			print '--NewEmbed--: ' + embeddedVerb
+						#		else:
+						#			print '--TOSS--'
+						if embeddedVerbIndex != -1:
+							highestEmbedVerbMap = updateCountMap(highestEmbedVerbMap, embeddedVerb)
+							highestEmbedLemmaMap = updateCountMap(highestEmbedLemmaMap, embeddedLemma)
 
-						highestEmbedVerbMap = updateCountMap(highestEmbedVerbMap, embeddedVerb)
-						highestEmbedLemmaMap = updateCountMap(highestEmbedLemmaMap, embeddedLemma)
-
-						# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
-						# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
-						precedeVerbPOS = tags[embeddedVerbIndex - 1]
-						precedeVerbWord = words[embeddedVerbIndex - 1]
-						if (embeddedVerbIndex == (len(tags) - 1)):
-							followVerbPOS = ""
-							followVerbWord = ""
-						else:
-							followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
-							followVerbWord = words[embeddedVerbIndex + 1]
-						#if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
-						if ((precedeVerbWord == "inte") or (followVerbWord == "inte")):
-							#if precedeVerbPOS == "AB":
-							if precedeVerbWord == "inte":
-								numOptionalNonEinSitu = numOptionalNonEinSitu + 1
-								if verboseMode:
-									outputEv2File.write("inSitu:\t" + origSentence + "\n")
+							# Now given the index of the embedded verb I want to only look at cases with {neg, adv} directly before and/or after that VB slot
+							# THEN if {neg, adv} appears directly before VB then clause is in situ, otherwise if {neg, adv} doesn't appear directly before VB then it's ev2.
+							precedeVerbPOS = tags[embeddedVerbIndex - 1]
+							precedeVerbWord = words[embeddedVerbIndex - 1]
+							if (embeddedVerbIndex == (len(tags) - 1)):
+								followVerbPOS = ""
+								followVerbWord = ""
 							else:
-								numOptionalEv2 += 1
-								matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
-								matrixLemmaeV2 = updateCountMap(matrixLemmaeV2, matrixLemma)
-								embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
-								embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
+								followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
+								followVerbWord = words[embeddedVerbIndex + 1]
+							#if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
+							if ((precedeVerbWord == "inte") or (followVerbWord == "inte")):
+								#if precedeVerbPOS == "AB":
+								if precedeVerbWord == "inte":
+									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
+									if verboseMode:
+										outputEv2File.write("inSitu:\t" + origSentence + "\n")
+								else:
+									numOptionalEv2 += 1
+									matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
+									matrixLemmaeV2 = updateCountMap(matrixLemmaeV2, matrixLemma)
+									embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
+									embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
 
-								if verboseMode:
-									outputEv2File.write("ev2:\t" + origSentence + "\n")
+									if verboseMode:
+										outputEv2File.write("ev2:\t" + origSentence + "\n")
 						else:
 							cantTellRaised += 1
-						#	print "can'tTell\t" + origSentence
+						#	if verboseMode:
+						#		outputEv2File.write("can'tTell:\t" + origSentence + "\n")
 					else:
 						proCases += 1
 				#		print "PRO:\t" + origSentence
@@ -207,6 +219,7 @@ def iterateCorpus(inputName, outputName):
 		with open(outputName, 'w') as outputEv2File:
 			currSentence = []
 			currLemmas = []
+			currMsds = []
 			currTags = []
 			currSentenceWithPOS = []
 			for currLine in currInputFile:
@@ -217,15 +230,17 @@ def iterateCorpus(inputName, outputName):
 					# we've finished the previous sentence so we should 
 					# pass the sentence to the evaluation function
 					# and then clear the "currSentence" list
-					evalSentence(currSentence, currLemmas, currTags, currSentenceWithPOS, outputEv2File)
+					evalSentence(currSentence, currLemmas, currTags, currMsds, currSentenceWithPOS, outputEv2File)
 					currSentence = []
 					currLemmas = []
+					currMsds = []
 					currTags = []
 					currSentenceWithPOS = []
 
 				# check if we're reading in a word
 				if currLineTokens[0] == "<w":
 					currPosRaw = currLineTokens[1]
+					currMsdRaw = currLineTokens[2]
 					currLemmaRaw = currLineTokens[3]
 					currWordRaw = currLineTokens[-1]
 
@@ -239,6 +254,9 @@ def iterateCorpus(inputName, outputName):
 						currLemmaParts = currLemmaRaw.split('|')
 						currLemmaClean = currLemmaParts[1]
 
+					currMsdClean = currMsdRaw.split('msd="')[1]
+					currMsdClean = currMsdClean[:-1]
+
 					currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
 					currPair = (currWordClean, currPosClean)
 
@@ -249,6 +267,7 @@ def iterateCorpus(inputName, outputName):
 					totalTokens += 1
 					currSentence.append(currWordClean)
 					currLemmas.append(currLemmaClean)
+					currMsds.append(currMsdClean)
 					currTags.append(currPosClean)
 					currSentenceWithPOS.append(currPair)
 	outputEv2File.close()

@@ -35,6 +35,40 @@ def corpusGrep(searchString, fileName):
 				currWordClean = currWordClean.lower()
 				currSentenceClean = currSentenceClean + " " + currWordClean
 
+def pullOutInstances(fileName):
+	with open(fileName, 'r') as currFile:
+		currSentenceMarkup = []
+		currSentenceClean = ""
+		instances = []
+		for currLine in currFile:
+			if not currLine:
+				continue
+			currLineTokens = currLine.split()
+			if not currLineTokens[0] == "</text>":
+				currSentenceMarkup.append(currLine)
+			if currLineTokens[0] == "</sentence>":
+
+				if 'att' in currSentenceClean:
+					print "\n----- " + currSentenceClean + " -----"
+					#for markupLine in currSentenceMarkup:
+					#	sys.stdout.write(markupLine)
+					for inst in instances:
+						sys.stdout.write(inst+"\n")
+					sys.stdout.flush()
+
+					currSentenceMarkup = []
+					currSentenceClean = ""
+					instances = []
+
+			# check if we're reading in a word
+			if currLineTokens[0] == "<w":
+				currWordRaw = currLineTokens[-1]
+				currWordClean = currWordRaw[currWordRaw.find(">")+1:currWordRaw.find("<")]
+				currWordClean = currWordClean.lower()
+				currSentenceClean = currSentenceClean + " " + currWordClean
+				if 'VB' in currLineTokens[2] and 'INF' not in currLineTokens[2]:
+					instances.append(currWordClean)
+
 ##
 ## Main method block
 ##
@@ -49,3 +83,4 @@ if __name__=="__main__":
 
 	searchString = searchString.lower()
 	corpusGrep(searchString, fileName)
+	#pullOutInstances(fileName)
