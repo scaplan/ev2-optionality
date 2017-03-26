@@ -28,7 +28,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	outputPlotLemmasFile=$resultSource$currCorpusName"_lemmas_plot"
 	echo 'Evaluating over: ' $currCorpusPath
 
-	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'False'
+	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'False'
 	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'True'
 
 	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
