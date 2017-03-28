@@ -19,9 +19,20 @@ subjectWhitelist = {"NN":1,	# NN	Substantiv	Noun
 					"HP":1,	# HP	Frågande/relativt pronomen	Interrogative/Relative Pronoun
 					}
 
-# msdBlacklist = {}
+adverbClausalList = {"så":1,
+					 "därför":1,
+					 "för":1,
+					 "eftersom":1,
+					 "med":1,
+					 "orsaken":1,
+					 "utsträckning":1,
+					 "sedan":1,
+					 "sen":1,
+					 "det":1,
+					 "av":1,
+					 "grad":1,
+					 }
 
-# AB.POS, KOM, SUV (is good, better, best), as well as those with w/ nominal morphology: NOM, GEN, SMS, URT, NEU, MAS, SIN, PLU, IND, DEF.
 
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
@@ -33,8 +44,11 @@ def findAllComp(words, value, tags):
 			toReturn.append(index)
 	return toReturn
 
+def catchAdverbialClausalComplement():
+	print 'write fuction here'
+
 def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
-	global numOptionalEv2, numOptionalNonEinSitu, proCases, overtSubj
+	global numOptionalEv2, numOptionalNonEinSitu, proCasesOrMatrixCopula, overtSubj, adverbClausalList
 	global cantTellRaised, numDiscardedSentences, matrixVerbECMap, matrixVerbeV2, verboseMode, allVerbFullTotalMap, allLemmaFullTotalMap
 	global matrixLemmaECMap, matrixLemmaeV2, embedVerbeV2, embedLemmaeV2, totalEmbedVerbMap, totalEmbedLemmaMap, highestEmbedVerbMap, highestEmbedLemmaMap
 	compInstances = findAllComp(words, 'att', tags)
@@ -58,6 +72,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 			if index < len(words) - 1:
 				followingTag = tags[index+1]
 				precedingWord = words[index-1]
+				precedingTag = tags[index-1]
 				if precedingWord == "kommer":
 					del words[index]
 					del words[index-1]
@@ -72,7 +87,13 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 					del tags[index]
 					del sentenceWithTags[index+1]
 					del sentenceWithTags[index]
-				
+				elif precedingWord in adverbClausalList:
+					del words[index]
+					del words[index-1]
+					del tags[index]
+					del tags[index-1]
+					del sentenceWithTags[index]
+					del sentenceWithTags[index-1]			
 
 		nonControlCompInstances = findAllComp(words, 'att', tags)
 		verbInstances = findAll(tags, 'VB')
@@ -115,7 +136,13 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 							containsOvertSubject = True
 							break
 
-					if containsOvertSubject:
+					# Make sure that the lowest matrix verb is not the copula
+					# so that there's not some sort of other clausal complement here..
+					matrixCopula = False
+					if matrixLemma == 'vara' or matrixLemma == 'e':
+						matrixCopula = True
+
+					if containsOvertSubject and not matrixCopula:
 						numRetainedSentences += 1
 						overtSubj += 1
 				#		print "OvertSubj:\t" + origSentence
@@ -175,13 +202,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 
 									if verboseMode:
 										outputEv2File.write("ev2:\t" + origSentence + "\n")
-						else:
-							cantTellRaised += 1
+							else:
+								cantTellRaised += 1
 						#	if verboseMode:
 						#		outputEv2File.write("can'tTell:\t" + origSentence + "\n")
 					else:
-						proCases += 1
-				#		print "PRO:\t" + origSentence
+						proCasesOrMatrixCopula += 1
 		else:
 			numDiscardedSentences += 1
 
@@ -298,7 +324,7 @@ if __name__=="__main__":
 	numOptionalNonEinSitu = 0
 	multipleComp = 0
 	overtSubj = 0
-	proCases = 0
+	proCasesOrMatrixCopula = 0
 	cantTellRaised = 0
 
 	allVerbFullTotalMap = {}
@@ -325,7 +351,7 @@ if __name__=="__main__":
 		outputStatsFile.write(str(numRetainedSentences) + " candidate sentences (single overt complementizer)\n")
 		outputStatsFile.write(str(numDiscardedSentences) + " sentences discarded (no complementizer)\n")
 		outputStatsFile.write(str(multipleComp) + ' Multiple Complementizers\n')
-		outputStatsFile.write(str(proCases) + ' proCases\n')
+		outputStatsFile.write(str(proCasesOrMatrixCopula) + ' proCasesOrMatrixCopula\n')
 		outputStatsFile.write(str(overtSubj) + ' overtSubj\n')
 		outputStatsFile.write(str(numOptionalEv2) + " optional ev2\n")
 		outputStatsFile.write(str(numOptionalNonEinSitu) + " embedded verb in situ\n")

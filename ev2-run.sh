@@ -12,6 +12,7 @@ resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
 declare -a corporaList
 #corporaList=("attasidor")
 corporaList=("flashback-politik")
+#corporaList=("flashback-politik-mini")
 
 cd $scriptSource
 
@@ -31,7 +32,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'False'
 	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'True'
 
-	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
+	#Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
 	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
 
 done
