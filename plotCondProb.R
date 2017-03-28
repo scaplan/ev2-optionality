@@ -38,8 +38,8 @@ cat(sprintf("Total verbs: %s\n", nrow(data)))
 dataCleanMinEC <- data[data[,4]>=1000,]
 cat(sprintf("Lemmas with numEC at least 1000: %s\n", nrow(dataCleanMinEC)))
 
-ev2RankDataRaw = dataCleanMinEC$X7.p.ev2.matrix.
-ev2RankData = -log(dataCleanMinEC$X7.p.ev2.matrix.)
+ev2RankDataRaw = dataCleanMinEC$X8.p.ev2.matrix.
+ev2RankData = -log(dataCleanMinEC$X8.p.ev2.matrix.)
 ev2RankDataRawSorted = sort(ev2RankDataRaw, decreasing = TRUE)
 ev2RankDataSorted = sort(ev2RankData)
 ev2RankDataSorted
