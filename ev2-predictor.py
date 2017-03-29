@@ -379,42 +379,50 @@ if __name__=="__main__":
 #	matrixVerbeV2			ev2GivenMatrixVerbCount/numEC	highestEmbedVerbMap		embedVerbeV2		embedVerbeV2/highestEmbedVerbMap
 
 	with open(matrixConditionsVerbPath,'w') as matrixConditionsFile:
-		matrixConditionsFile.write('1.verb 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.highestEmbedVerbCount 10.c(ev2|embed) 11.p(ev2|embed)\n')
+		matrixConditionsFile.write('1.verb 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.highestEmbedVerbCount 10.embedVerbCanTellIfRaised 11.c(ev2|embed) 12.p(ev2|embed)\n')
 		for verb in sorted(allVerbFullTotalMap, key=allVerbFullTotalMap.get, reverse=True):
 			verbCountAll = allVerbFullTotalMap[verb]
 			verbEmbedCount = accessDictEntry(totalEmbedVerbMap, verb)
 			verbNonEmbedCount = verbCountAll - verbEmbedCount
 			highestEmbedVerbCount = accessDictEntry(highestEmbedVerbMap, verb)
+
+			embedVerbCanTellIfRaisedCount = accessDictEntry(embedVerbCanTellIfRaised, verb)
 			ev2GivenEmbedCount = accessDictEntry(embedVerbeV2, verb)
-			ev2GivenEmbedVerbProb = safeDivide(ev2GivenEmbedCount, highestEmbedVerbCount)
+			ev2GivenEmbedVerbProb = safeDivide(ev2GivenEmbedCount, embedVerbCanTellIfRaisedCount)
 
 			numEC = accessDictEntry(matrixVerbECMap, verb)
 			numCanTellIfRaised = accessDictEntry(matrixVerbCanTellIfRaised, verb)
 			ecGivenMatrix = safeDivide(numEC, verbNonEmbedCount)
 			ev2GivenMatrixVerbCount = accessDictEntry(matrixVerbeV2, verb)
 			ev2GivenMatrixVerbProb = safeDivide(ev2GivenMatrixVerbCount, numEC)
+			
 
 			matrixConditionsFile.write(verb + " " + str(verbCountAll) + " " + str(verbNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(numCanTellIfRaised))
-			matrixConditionsFile.write(str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + " " + str(highestEmbedVerbCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedVerbProb) + "\n")
+			matrixConditionsFile.write(str(ev2GivenMatrixVerbCount) + " " + str(ev2GivenMatrixVerbProb) + " " + str(highestEmbedVerbCount) + " ")
+			matrixConditionsFile.write(str(embedVerbCanTellIfRaisedCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedVerbProb) + "\n")
 	matrixConditionsFile.close()
 	
 	# output lemma file here
 	with open(matrixConditionsLemmaPath,'w') as matrixConditionsFile:
-		matrixConditionsFile.write('1.lemma 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.highestEmbedVerbCount 10.c(ev2|embed) 11.p(ev2|embed)\n')
+		matrixConditionsFile.write('1.lemma 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.highestEmbedVerbCount 10.embedLemmaCanTellIfRaised 11.c(ev2|embed) 12.p(ev2|embed)\n')
 		for lemma in sorted(allLemmaFullTotalMap, key=allLemmaFullTotalMap.get, reverse=True):
 			lemmaCountAll = allLemmaFullTotalMap[lemma]
 			lemmaEmbedCount = accessDictEntry(totalEmbedLemmaMap, lemma)
 			lemmaNonEmbedCount = lemmaCountAll - lemmaEmbedCount
 			highestEmbedLemmaCount = accessDictEntry(highestEmbedLemmaMap, lemma)
+
+			embedLemmaCanTellIfRaisedCount = accessDictEntry(embedLemmaCanTellIfRaised, lemma)
 			ev2GivenEmbedCount = accessDictEntry(embedLemmaeV2, lemma)
-			ev2GivenEmbedLemmaProb = safeDivide(ev2GivenEmbedCount, highestEmbedLemmaCount)
+			ev2GivenEmbedLemmaProb = safeDivide(ev2GivenEmbedCount, embedLemmaCanTellIfRaisedCount)
 
 			numEC = accessDictEntry(matrixLemmaECMap, lemma)
 			numCanTellIfRaised = accessDictEntry(matrixLemmaCanTellIfRaised, lemma)
 			ecGivenMatrix = safeDivide(numEC, lemmaNonEmbedCount)
 			ev2GivenMatrixLemmaCount = accessDictEntry(matrixLemmaeV2, lemma)
 			ev2GivenMatrixLemmaProb = safeDivide(ev2GivenMatrixLemmaCount, numCanTellIfRaised)
+			
 
-			matrixConditionsFile.write(lemma + " " + str(lemmaCountAll) + " " + str(lemmaNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(numCanTellIfRaised))
-			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(highestEmbedLemmaCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
+			matrixConditionsFile.write(lemma + " " + str(lemmaCountAll) + " " + str(lemmaNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(numCanTellIfRaised) + " ")
+			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(highestEmbedLemmaCount) + " ")
+			matrixConditionsFile.write(str(embedLemmaCanTellIfRaisedCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
 	matrixConditionsFile.close()

@@ -1,17 +1,17 @@
 #!/bin/bash  
 
-#scriptSource='/home/spencer/Dropbox/penn_CS_account/ev2-optionality/'
-#directorySource='/home/spencer/Documents/Swedish-ev2-corpora/'
-#resultSource='/home/spencer/Dropbox/penn_CS_account/ev2-optionality/output/'
-
 scriptSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/'
 directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/'
 #directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/flashback-politik/'
-resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
+#resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
+resultSource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-output-ev2/'
+
+input="$1"
 
 declare -a corporaList
-corporaList=("academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860")
-#corporaList=("flashback-politik")
+#corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860")
+corporaList=("flashback-politik")
+#corporaList=($input)
 
 cd $scriptSource
 
@@ -28,10 +28,10 @@ for currCorpusName in "${corporaList[@]}"; do
 	outputPlotLemmasFile=$resultSource$currCorpusName"_lemmas_plot"
 	echo 'Evaluating over: ' $currCorpusPath
 
-	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'False'
-	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'True' &
+	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'False'
+	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile 'True'
 
 	#Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
-	#Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
+	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
 
 done
