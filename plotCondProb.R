@@ -19,7 +19,6 @@ data=read.csv(orig_csv,header=T,sep = "")
 
 colnames(data)
 cat(sprintf("Total verbs: %s\n", nrow(data)))
-#print(data$ev2GivenMatrix)
 
 dataCleanMin5 <- data[data[,7]>4,]
 cat(sprintf("Verbs with ev2 at least five times: %s\n", nrow(dataCleanMin5)))
@@ -33,7 +32,6 @@ ev2RankDataRawSorted
 
 dataCleanMinEmbed <- data[data[,9]>999,] # X9.highestEmbedVerbCount
 cat(sprintf("Lemmas with highestEmbedVerbCount at least 1000: %s\n", nrow(dataCleanMinEmbed)))
-#dataCleanMinEmbed
 ev2EmbedRank = dataCleanMinEmbed$X12.p.ev2.embed.
 ev2EmbedRankSorted = sort(ev2EmbedRank, decreasing = TRUE)
 
@@ -43,13 +41,9 @@ ev2EmbedRankSorted = sort(ev2EmbedRank, decreasing = TRUE)
 
 png(output_name_freqRawRank)
 plot(seq_along(ev2RankDataRawSorted), unclass(ev2RankDataRawSorted), xlab="Rank", ylab="P(ev2|matrix)")
-#dev.off()
 
 png(output_name_embed)
 plot(seq_along(ev2EmbedRankSorted), unclass(ev2EmbedRankSorted), xlab="Rank", ylab="P(ev2|embed)")
-
-#totalEV2Mass = sum(ev2RankDataRawSorted)
-#ev2RankDataRawSortedScaled = ev2RankDataRawSorted / totalEV2Mass
 
 #png(output_name_freqRawScaledRank)
 #plot(seq_along(ev2RankDataRawSortedScaled), unclass(ev2RankDataRawSortedScaled), xlab="Rank", ylab="P(matrix|ev2) freq. normed")
@@ -61,6 +55,5 @@ dataCleanMin5$logX8.p.ev2.matrix. = log(dataCleanMin5$X8.p.ev2.matrix.)
 png(output_nameMin5)
 ggplot(dataCleanMin5, aes(X8.p.ev2.matrix., X5.p.ec.matrix., ) ) + geom_jitter(colour=alpha("black",0.15)) + geom_smooth(method=lm)
 #ggplot(dataCleanMin5, aes(logX8.p.ev2.matrix., logX5.p.ec.matrix., ) ) + geom_jitter(colour=alpha("black",0.15)) + geom_smooth(method=lm)
-#dev.off()
 
 message ("Finished")
