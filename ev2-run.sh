@@ -10,8 +10,8 @@ verbClassSource=$scriptSource'verb_classes_KDSC.csv'
 input="$1"
 
 declare -a corporaList
-corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860")
-#corporaList=("flashback-politik")
+#corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860")
+corporaList=("flashback-politik")
 #corporaList=($input)
 
 cd $scriptSource
@@ -40,6 +40,6 @@ for currCorpusName in "${corporaList[@]}"; do
 
 	verbClassPlot=$resultSource$currCorpusName'_verbSemanticClass_plot.png'
 
-	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $verbClassPlot
+	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot
 
 done

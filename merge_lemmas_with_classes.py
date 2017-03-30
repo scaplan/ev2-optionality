@@ -54,6 +54,32 @@ def readInputFile(inputData, newHeader, outputFilePath):
 					outFile.write(newLine)
 	outFile.close()
 
+def intersectionFiles(fileOne, fileTwo, outputFileOne, outputFileTwo):
+	fileOneLemmas = {}
+	with open(outputFileOne, 'w') as outOne:
+		with open(outputFileTwo, 'w') as outTwo:
+			with open(fileOne, 'r') as f:
+				oldHeader = f.readline()
+				outOne.write(oldHeader)
+				for currLine in f:
+					if not currLine:
+						continue
+					currLineTokens = currLine.rstrip().split(' ')
+					currLemma = currLineTokens[0]
+					fileOneLemmas[currLemma] = currLine
+
+			with open(fileTwo, 'r') as f:
+					oldHeader = f.readline()
+					outTwo.write(oldHeader)
+					for currLine in f:
+						if not currLine:
+							continue
+						currLineTokens = currLine.rstrip().split(' ')
+						currLemma = currLineTokens[0]
+						if currLemma in fileOneLemmas:
+							outTwo.write(currLine)
+							outOne.write(fileOneLemmas[currLemma])
+
 
 
 # iterate over inputData and append class info when retrived from lemmaMap (and just dashed when absent)
@@ -72,5 +98,9 @@ if __name__=="__main__":
 	classesData = sys.argv[2]
 	outputFile = sys.argv[3]
 
+	#outTwo = sys.argv[4]
+
 	headerToAdd = readInLemmaClassInfo(classesData)
 	readInputFile(inputData, headerToAdd, outputFile)
+
+	#intersectionFiles(inputData, classesData, outputFile, outTwo)
