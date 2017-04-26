@@ -33,6 +33,12 @@ adverbClausalList = {"så":1,
 					 "grad":1,
 					 }
 
+inteSet = {"inte":1,
+		   "icke":1,
+		   "ikke":1,
+		   "ej":1,
+		}
+
 
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
@@ -52,6 +58,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 	global cantTellRaised, numDiscardedSentences, matrixVerbECMap, matrixVerbeV2, verboseMode, allVerbFullTotalMap, allLemmaFullTotalMap
 	global matrixLemmaECMap, matrixLemmaeV2, embedVerbeV2, embedLemmaeV2, totalEmbedVerbMap, totalEmbedLemmaMap, highestEmbedVerbMap, highestEmbedLemmaMap
 	global matrixVerbCanTellIfRaised, matrixLemmaCanTellIfRaised, embedVerbCanTellIfRaised, embedLemmaCanTellIfRaised
+	global interveningMaterialEV2, interveningMaterialCanTellIfRaised
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -128,6 +135,9 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 					embeddedVerb = words[embeddedVerbIndex]
 					embeddedLemma = lemmas[embeddedVerbIndex]
 
+					### figure out how much intervening material there is
+					interveneLength = (compIndex - matrixVerbIndex) - 1
+
 					# gather all the material between the compIndex and the embeddedVerbIndex
 					# check that it contains at least element from the subject whitelist
 					containsOvertSubject = False
@@ -187,15 +197,16 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								followVerbPOS = tags[embeddedVerbIndex + 1] #make sure we're not at the end
 								followVerbWord = words[embeddedVerbIndex + 1]
 							#if ((precedeVerbPOS == "AB") or (followVerbPOS == "AB")):
-							if ((precedeVerbWord == "inte") or (followVerbWord == "inte")):
+							if ((precedeVerbWord in inteSet) or (followVerbWord in inteSet)):
 								#if precedeVerbPOS == "AB":
 
 								matrixVerbCanTellIfRaised = updateCountMap(matrixVerbCanTellIfRaised, matrixVerb)
 								matrixLemmaCanTellIfRaised = updateCountMap(matrixLemmaCanTellIfRaised, matrixLemma)
 								embedVerbCanTellIfRaised = updateCountMap(embedVerbCanTellIfRaised, embeddedVerb)
 								embedLemmaCanTellIfRaised  = updateCountMap(embedLemmaCanTellIfRaised, embeddedLemma)
+								interveningMaterialCanTellIfRaised = updateCountMap(interveningMaterialCanTellIfRaised, interveneLength)
 
-								if precedeVerbWord == "inte":
+								if precedeVerbWord in inteSet:
 									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 									if verboseMode:
 										outputEv2File.write("inSitu:\t" + origSentence + "\n")
@@ -205,6 +216,9 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 									matrixLemmaeV2 = updateCountMap(matrixLemmaeV2, matrixLemma)
 									embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
 									embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
+									interveningMaterialEV2 = updateCountMap(interveningMaterialEV2, interveneLength)
+								#	print origSentence
+								#	print 'interveneLength: ' + str(interveneLength) + '\n'
 
 									if verboseMode:
 										outputEv2File.write("ev2:\t" + origSentence + "\n")
@@ -286,22 +300,28 @@ def iterateCorpus(inputName, outputName):
 						currLemmaParts = currLemmaRaw.split('|')
 						currLemmaClean = currLemmaParts[1]
 
-					currMsdClean = currMsdRaw.split('msd="')[1]
-					currMsdClean = currMsdClean[:-1]
+					#print len(currMsdRaw)
+					#print currMsdRaw.split('msd="')
+					# print out which line we're on
+					# or check that when splitting we have enough resulting elements
+					currMsdTemp = currMsdRaw.split('msd="')
+					if len(currMsdTemp) > 1:
+						currMsdClean = currMsdTemp[1]
+						currMsdClean = currMsdClean[:-1]
 
-					currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
-					currPair = (currWordClean, currPosClean)
+						currPosClean = currPosRaw[currPosRaw.find("\"")+1:-1]
+						currPair = (currWordClean, currPosClean)
 
-					if (currWordRaw in typeDict):
-						typeDict[currWordRaw] = typeDict[currWordRaw] + 1
-					else:
-						typeDict[currWordRaw] = 1
-					totalTokens += 1
-					currSentence.append(currWordClean)
-					currLemmas.append(currLemmaClean)
-					currMsds.append(currMsdClean)
-					currTags.append(currPosClean)
-					currSentenceWithPOS.append(currPair)
+						if (currWordRaw in typeDict):
+							typeDict[currWordRaw] = typeDict[currWordRaw] + 1
+						else:
+							typeDict[currWordRaw] = 1
+						totalTokens += 1
+						currSentence.append(currWordClean)
+						currLemmas.append(currLemmaClean)
+						currMsds.append(currMsdClean)
+						currTags.append(currPosClean)
+						currSentenceWithPOS.append(currPair)
 	outputEv2File.close()
 	outputStatsFile.write(str(totalTokens) + ' total tokens\n')
 	outputStatsFile.write(str(len(typeDict)) + ' total types\n')
@@ -311,7 +331,7 @@ def iterateCorpus(inputName, outputName):
 ##
 if __name__=="__main__":
 
-	if (len(sys.argv) < 6):
+	if (len(sys.argv) < 7):
 		print('incorrect number of arguments')
 		exit(0)
 
@@ -321,7 +341,8 @@ if __name__=="__main__":
 	matrixConditionsVerbPath = sys.argv[4]
 	verboseMode = False
 	matrixConditionsLemmaPath = sys.argv[5]
-	if (sys.argv[6] == 'True'):
+	interveneLengthPath = sys.argv[6]
+	if (sys.argv[7] == 'True'):
 		verboseMode = True
 
 	numRetainedSentences = 0
@@ -348,11 +369,13 @@ if __name__=="__main__":
 	matrixLemmaeV2 = {}
 	embedVerbeV2 = {}
 	embedLemmaeV2 = {}
+	interveningMaterialEV2 = {}
 
 	matrixVerbCanTellIfRaised = {}
 	matrixLemmaCanTellIfRaised = {}
 	embedVerbCanTellIfRaised = {}
 	embedLemmaCanTellIfRaised = {}
+	interveningMaterialCanTellIfRaised = {}
 
 
 	with open(outputStatsPath,'w') as outputStatsFile:
@@ -426,3 +449,14 @@ if __name__=="__main__":
 			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(highestEmbedLemmaCount) + " ")
 			matrixConditionsFile.write(str(embedLemmaCanTellIfRaisedCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
 	matrixConditionsFile.close()
+
+	### Output file with data relating to interveningMaterialEV2
+	with open(interveneLengthPath,'w') as interveneLengthFile:
+		interveneLengthFile.write('1.length 2.numCanTellIfRaised 3.c(ev2|intervene) 4.p(ev2|intervene)\n')
+		for currLength in sorted(interveningMaterialEV2, key=interveningMaterialEV2.get, reverse=False):
+			numCanTellIfRaised = accessDictEntry(interveningMaterialCanTellIfRaised, currLength)
+			ev2GivenInterveneLengthCount = accessDictEntry(interveningMaterialEV2, currLength)
+			ev2GivenInterveneLengthProb = safeDivide(ev2GivenInterveneLengthCount, numCanTellIfRaised)
+			interveneLengthFile.write(str(currLength) + " " + str(numCanTellIfRaised) + " " + str(ev2GivenInterveneLengthCount) + " " + str(ev2GivenInterveneLengthProb) + "\n")
+	interveneLengthFile.close()
+

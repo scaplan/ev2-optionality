@@ -32,7 +32,7 @@ def readInLemmaClassInfo(classesData):
 			lineInfo = currLineTokens[1:]
 			if (lemma in lemmaToClassMap):
 				print 'double entry for: ' + lemma
-				sys.exit()
+			#	sys.exit()
 			lemmaToClassMap[lemma] = lineInfo
 			#print 'Map: ' + lemma + ' ' + str(lineInfo)
 	return headerInfo
