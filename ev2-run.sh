@@ -14,8 +14,8 @@ input="$1"
 declare -a corporaList
 #corporaList=("familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
 #corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
-#corporaList=("flashback-politik")
-corporaList=("flashback-politik-mini")
+corporaList=("flashback-politik")
+#corporaList=("flashback-politik-mini")
 #corporaList=($input)
 
 cd $scriptSource
@@ -35,10 +35,10 @@ for currCorpusName in "${corporaList[@]}"; do
 	outputPlotLemmasFile=$resultSource$currCorpusName"_lemmas_plot"
 	echo 'Evaluating over: ' $currCorpusPath
 
-	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False'
+#	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False'
 	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True'
 
-#	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
+	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
 
 #	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
 #	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
