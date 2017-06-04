@@ -58,7 +58,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 	global cantTellRaised, numDiscardedSentences, matrixVerbECMap, matrixVerbeV2, verboseMode, allVerbFullTotalMap, allLemmaFullTotalMap
 	global matrixLemmaECMap, matrixLemmaeV2, embedVerbeV2, embedLemmaeV2, totalEmbedVerbMap, totalEmbedLemmaMap, highestEmbedVerbMap, highestEmbedLemmaMap
 	global matrixVerbCanTellIfRaised, matrixLemmaCanTellIfRaised, embedVerbCanTellIfRaised, embedLemmaCanTellIfRaised
-	global interveningMaterialEV2, interveningMaterialCanTellIfRaised
+	global interveningMaterialEV2, interveningMaterialCanTellIfRaised, matrixLemmaPosEV2, matrixLemmaNegEV2, matrixLemmaPosCanTellIfRaised, matrixLemmaNegCanTellIfRaised
 	compInstances = findAllComp(words, 'att', tags)
 	origSentence = ""
 	for currWord in words:
@@ -129,8 +129,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 				if (len(matrixDomain) > 0 and len(embeddedDomain) > 0):
 
 					matrixVerbIndex = matrixDomain[-1]
+					directlyBeforeMatrix = lemmas[matrixVerbIndex-1]
 					matrixVerb = words[matrixVerbIndex]
 					matrixLemma = lemmas[matrixVerbIndex]
+					
+				#	if directlyBeforeMatrix == 'inte':
+				#		print directlyBeforeMatrix, matrixLemma, '\n'
 					embeddedVerbIndex = embeddedDomain[0]
 					embeddedVerb = words[embeddedVerbIndex]
 					embeddedLemma = lemmas[embeddedVerbIndex]
@@ -205,11 +209,16 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								embedVerbCanTellIfRaised = updateCountMap(embedVerbCanTellIfRaised, embeddedVerb)
 								embedLemmaCanTellIfRaised  = updateCountMap(embedLemmaCanTellIfRaised, embeddedLemma)
 								interveningMaterialCanTellIfRaised = updateCountMap(interveningMaterialCanTellIfRaised, interveneLength)
+								if directlyBeforeMatrix == 'inte':
+									matrixLemmaNegCanTellIfRaised = updateCountMap(matrixLemmaNegCanTellIfRaised, matrixLemma)
+								else:
+									matrixLemmaPosCanTellIfRaised = updateCountMap(matrixLemmaPosCanTellIfRaised, matrixLemma)
 
 								if precedeVerbWord in inteSet:
 									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 									if verboseMode:
-										outputEv2File.write("inSitu:\t" + origSentence + "\n")
+										if matrixLemma == 'acceptera' or matrixLemma == 'tvivla' or matrixLemma == 'tveka' or matrixLemma == 'uppskatta':
+											outputEv2File.write("inSitu:\t" + origSentence + "\n")
 								else:
 									numOptionalEv2 += 1
 									matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
@@ -217,11 +226,16 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 									embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
 									embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
 									interveningMaterialEV2 = updateCountMap(interveningMaterialEV2, interveneLength)
+									if directlyBeforeMatrix == 'inte':
+										matrixLemmaNegEV2 = updateCountMap(matrixLemmaNegEV2, matrixLemma)
+									else:
+										matrixLemmaPosEV2 = updateCountMap(matrixLemmaPosEV2, matrixLemma)
 								#	print origSentence
 								#	print 'interveneLength: ' + str(interveneLength) + '\n'
 
 									if verboseMode:
-										outputEv2File.write("ev2:\t" + origSentence + "\n")
+										if matrixLemma == 'acceptera' or matrixLemma == 'tvivla' or matrixLemma == 'tveka' or matrixLemma == 'uppskatta':
+											outputEv2File.write("ev2:\t" + origSentence + "\n")
 							else:
 								cantTellRaised += 1
 						#	if verboseMode:
@@ -377,6 +391,10 @@ if __name__=="__main__":
 	embedLemmaCanTellIfRaised = {}
 	interveningMaterialCanTellIfRaised = {}
 
+	matrixLemmaPosEV2 = {}
+	matrixLemmaNegEV2 = {}
+	matrixLemmaPosCanTellIfRaised = {}
+	matrixLemmaNegCanTellIfRaised = {}
 
 	with open(outputStatsPath,'w') as outputStatsFile:
 	
@@ -427,7 +445,7 @@ if __name__=="__main__":
 	
 	# output lemma file here
 	with open(matrixConditionsLemmaPath,'w') as matrixConditionsFile:
-		matrixConditionsFile.write('1.lemma 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.highestEmbedVerbCount 10.embedLemmaCanTellIfRaised 11.c(ev2|embed) 12.p(ev2|embed)\n')
+		matrixConditionsFile.write('1.lemma 2.totalCount 3.NonEmbedCount 4.numEC 5.p(ec|matrix) 6.numCanTellIfRaised 7.c(ev2|matrix) 8.p(ev2|matrix) 9.NegatedCanTellIfRaised 10.nonNegCanTellIfRaised 11.c(ev2|NegatedMatrix) 12.c(ev2|NonNegMatrix) 13.p(ev2|NegatedMatrix) 14.p(ev2|NonNegMatrix) 15.highestEmbedVerbCount 16.embedLemmaCanTellIfRaised 17.c(ev2|embed) 18.p(ev2|embed)\n')
 		for lemma in sorted(allLemmaFullTotalMap, key=allLemmaFullTotalMap.get, reverse=True):
 			lemmaCountAll = allLemmaFullTotalMap[lemma]
 			lemmaEmbedCount = accessDictEntry(totalEmbedLemmaMap, lemma)
@@ -443,11 +461,18 @@ if __name__=="__main__":
 			ecGivenMatrix = safeDivide(numEC, lemmaNonEmbedCount)
 			ev2GivenMatrixLemmaCount = accessDictEntry(matrixLemmaeV2, lemma)
 			ev2GivenMatrixLemmaProb = safeDivide(ev2GivenMatrixLemmaCount, numCanTellIfRaised)
-			
+
+			negatedMatrixCanTellIfRaisedCount = accessDictEntry(matrixLemmaNegCanTellIfRaised, lemma)
+			nonNegMatrixCanTellIfRaisedCount  = accessDictEntry(matrixLemmaPosCanTellIfRaised, lemma)
+			negatedMatrixEV2Count = accessDictEntry(matrixLemmaNegEV2, lemma)
+			nonNegMatrixEV2Count = accessDictEntry(matrixLemmaPosEV2, lemma)
+			ev2GivenNegatedMatrixProb = safeDivide(negatedMatrixEV2Count, negatedMatrixCanTellIfRaisedCount)
+			ev2GivenNonNegMatrixProb = safeDivide(nonNegMatrixEV2Count, nonNegMatrixCanTellIfRaisedCount)
 
 			matrixConditionsFile.write(lemma + " " + str(lemmaCountAll) + " " + str(lemmaNonEmbedCount) + " " + str(numEC) + " " + str(ecGivenMatrix) + " " + str(numCanTellIfRaised) + " ")
-			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(highestEmbedLemmaCount) + " ")
-			matrixConditionsFile.write(str(embedLemmaCanTellIfRaisedCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
+			matrixConditionsFile.write(str(ev2GivenMatrixLemmaCount) + " " + str(ev2GivenMatrixLemmaProb) + " " + str(negatedMatrixCanTellIfRaisedCount) + " " + str(nonNegMatrixCanTellIfRaisedCount) + " ")
+			matrixConditionsFile.write(str(negatedMatrixEV2Count) + " " + str(nonNegMatrixEV2Count) + " " + str(ev2GivenNegatedMatrixProb) + " " + str(ev2GivenNonNegMatrixProb) + " ")
+			matrixConditionsFile.write(str(highestEmbedLemmaCount) + " " + str(embedLemmaCanTellIfRaisedCount) + " " + str(ev2GivenEmbedCount) + " " + str(ev2GivenEmbedLemmaProb) + "\n")
 	matrixConditionsFile.close()
 
 	### Output file with data relating to interveningMaterialEV2
