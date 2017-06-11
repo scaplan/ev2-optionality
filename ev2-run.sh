@@ -13,14 +13,16 @@ input="$1"
 
 declare -a corporaList
 #corporaList=("familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
-#corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
-corporaList=("flashback-politik")
+corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
+#corporaList=("flashback-politik")
 #corporaList=("flashback-politik-mini")
 #corporaList=($input)
 
 cd $scriptSource
 
 currCorpusSource=''
+
+background_PID_list=()
 
 for currCorpusName in "${corporaList[@]}"; do
 
@@ -35,10 +37,17 @@ for currCorpusName in "${corporaList[@]}"; do
 	outputPlotLemmasFile=$resultSource$currCorpusName"_lemmas_plot"
 	echo 'Evaluating over: ' $currCorpusPath
 
-#	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False'
+#	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False' &
 	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True'
 
-	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
+	LAST_PID=$!
+	background_PID_list+=($LAST_PID)
+
+#	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
+
+	matrixNegationOutputFile=$resultSource$currCorpusName"_matrixNegationSignificancetesting.txt"
+	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFileWithClassInfo > $matrixNegationOutputFile
+#	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFileWithClassInfo
 
 #	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
 #	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
@@ -49,3 +58,9 @@ for currCorpusName in "${corporaList[@]}"; do
 #	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot
 
 done
+
+for backgroun_PID in "${background_PID_list[@]}"; do
+	wait $backgroun_PID
+done
+
+echo 'Completed'
