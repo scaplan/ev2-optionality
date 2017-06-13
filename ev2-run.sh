@@ -38,16 +38,18 @@ for currCorpusName in "${corporaList[@]}"; do
 	echo 'Evaluating over: ' $currCorpusPath
 
 #	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False' &
-	#python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True'
+	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True'
 
 	LAST_PID=$!
 	background_PID_list+=($LAST_PID)
 
 #	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
-
-	matrixNegationOutputFile=$resultSource$currCorpusName"_matrixNegationSignificancetesting.txt"
-	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFileWithClassInfo > $matrixNegationOutputFile
-#	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFileWithClassInfo
+	
+	### Matrix Negation Experiment
+#	matrixNegationOutputFile=$resultSource$currCorpusName"_matrixNegationSignificancetesting.txt"
+#	matrixNegationOutputFileAll=$resultSource$currCorpusName"_matrixNegationSignificancetesting_all.txt"
+#	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFileWithClassInfo > $matrixNegationOutputFile
+#	Rscript testMatrixNegation.R $outputMatrixConditionsLemmaFile > $matrixNegationOutputFileAll
 
 #	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
 #	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile

@@ -39,6 +39,14 @@ inteSet = {"inte":1,
 		   "ej":1,
 		}
 
+verboseInvestigationSet = {"säga":1,
+						   "tänka":1,
+						   "tala":1,
+						   "känna":1,
+						   "lova":1,
+						   "gå":1,
+						  }
+
 
 def findAll(lst, value):
     return [i for i, x in enumerate(lst) if value==x]
@@ -209,7 +217,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								embedVerbCanTellIfRaised = updateCountMap(embedVerbCanTellIfRaised, embeddedVerb)
 								embedLemmaCanTellIfRaised  = updateCountMap(embedLemmaCanTellIfRaised, embeddedLemma)
 								interveningMaterialCanTellIfRaised = updateCountMap(interveningMaterialCanTellIfRaised, interveneLength)
-								if directlyBeforeMatrix == 'inte':
+								if directlyBeforeMatrix in inteSet:
 									matrixLemmaNegCanTellIfRaised = updateCountMap(matrixLemmaNegCanTellIfRaised, matrixLemma)
 								else:
 									matrixLemmaPosCanTellIfRaised = updateCountMap(matrixLemmaPosCanTellIfRaised, matrixLemma)
@@ -217,8 +225,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								if precedeVerbWord in inteSet:
 									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 									if verboseMode:
-										if matrixLemma == 'acceptera' or matrixLemma == 'tvivla' or matrixLemma == 'tveka' or matrixLemma == 'uppskatta':
-											outputEv2File.write("inSitu:\t" + origSentence + "\n")
+										if matrixLemma in verboseInvestigationSet:
+											if directlyBeforeMatrix in inteSet:
+												# negated
+												outputEv2File.write("inSitu (negated):\t" + origSentence + "\n")
+											else:
+												outputEv2File.write("inSitu (non-neg):\t" + origSentence + "\n")
 								else:
 									numOptionalEv2 += 1
 									matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
@@ -226,7 +238,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 									embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
 									embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
 									interveningMaterialEV2 = updateCountMap(interveningMaterialEV2, interveneLength)
-									if directlyBeforeMatrix == 'inte':
+									if directlyBeforeMatrix in inteSet:
 										matrixLemmaNegEV2 = updateCountMap(matrixLemmaNegEV2, matrixLemma)
 									else:
 										matrixLemmaPosEV2 = updateCountMap(matrixLemmaPosEV2, matrixLemma)
@@ -234,8 +246,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								#	print 'interveneLength: ' + str(interveneLength) + '\n'
 
 									if verboseMode:
-										if matrixLemma == 'acceptera' or matrixLemma == 'tvivla' or matrixLemma == 'tveka' or matrixLemma == 'uppskatta':
-											outputEv2File.write("ev2:\t" + origSentence + "\n")
+										if matrixLemma in verboseInvestigationSet:
+											if directlyBeforeMatrix in inteSet:
+												# negated
+												outputEv2File.write("ev2 (negated):\t" + origSentence + "\n")
+											else:
+												outputEv2File.write("ev2 (non-neg):\t" + origSentence + "\n")
 							else:
 								cantTellRaised += 1
 						#	if verboseMode:
