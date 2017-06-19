@@ -4,7 +4,7 @@ scriptSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/'
 directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/'
 #directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/flashback-politik/'
 #resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
-resultSource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-output-ev2/'
+resultSource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-output-ev2/fixed-matrix-neg/'
 #verbClassSource=$scriptSource'verb_classes_KDSC.csv'
 #verbClassSource=$scriptSource'verb_classes_lit_KDSC.csv'
 verbClassSource=$scriptSource'verb_classes_all_KDSC.csv'
@@ -15,7 +15,7 @@ declare -a corporaList
 #corporaList=("familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
 corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
 #corporaList=("flashback-politik")
-#corporaList=("flashback-politik-mini")
+#corporaList=("rd-bet")
 #corporaList=($input)
 
 cd $scriptSource
@@ -38,7 +38,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	echo 'Evaluating over: ' $currCorpusPath
 
 #	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'False' &
-	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True'
+#	python ev2-predictor.py $currCorpusPath $outputStatsFile $outputEv2File $outputMatrixConditionsVerbFile $outputMatrixConditionsLemmaFile $outputInterveneFile 'True' &
 
 	LAST_PID=$!
 	background_PID_list+=($LAST_PID)
@@ -54,10 +54,11 @@ for currCorpusName in "${corporaList[@]}"; do
 #	Rscript plotCondProb.R $outputMatrixConditionsVerbFile $outputPlotVerbsFile
 #	Rscript plotCondProb.R $outputMatrixConditionsLemmaFile $outputPlotLemmasFile
 
-#	verbClassPlotRoot=$resultSource$currCorpusName'_all'
-#	verbClassPlot=$verbClassPlotRoot'_verbSemanticClass_plot.png'
+	verbClassPlotRoot=$resultSource$currCorpusName'_all'
+	verbClassPlot=$verbClassPlotRoot'_verbSemanticClass_plot.png'
+	verbClassOutput=$verbClassPlotRoot'_stats_output.txt'
 	
-#	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot
+	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot > $verbClassOutput
 
 done
 

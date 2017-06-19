@@ -138,6 +138,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 
 					matrixVerbIndex = matrixDomain[-1]
 					directlyBeforeMatrix = lemmas[matrixVerbIndex-1]
+					directlyAfterMatrix = lemmas[matrixVerbIndex+1]
 					matrixVerb = words[matrixVerbIndex]
 					matrixLemma = lemmas[matrixVerbIndex]
 					
@@ -217,7 +218,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								embedVerbCanTellIfRaised = updateCountMap(embedVerbCanTellIfRaised, embeddedVerb)
 								embedLemmaCanTellIfRaised  = updateCountMap(embedLemmaCanTellIfRaised, embeddedLemma)
 								interveningMaterialCanTellIfRaised = updateCountMap(interveningMaterialCanTellIfRaised, interveneLength)
-								if directlyBeforeMatrix in inteSet:
+								if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
 									matrixLemmaNegCanTellIfRaised = updateCountMap(matrixLemmaNegCanTellIfRaised, matrixLemma)
 								else:
 									matrixLemmaPosCanTellIfRaised = updateCountMap(matrixLemmaPosCanTellIfRaised, matrixLemma)
@@ -226,7 +227,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 									if verboseMode:
 										if matrixLemma in verboseInvestigationSet:
-											if directlyBeforeMatrix in inteSet:
+											if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
 												# negated
 												outputEv2File.write("inSitu (negated):\t" + origSentence + "\n")
 											else:
@@ -238,7 +239,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 									embedVerbeV2 = updateCountMap(embedVerbeV2, embeddedVerb)
 									embedLemmaeV2  = updateCountMap(embedLemmaeV2, embeddedLemma)
 									interveningMaterialEV2 = updateCountMap(interveningMaterialEV2, interveneLength)
-									if directlyBeforeMatrix in inteSet:
+									if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
 										matrixLemmaNegEV2 = updateCountMap(matrixLemmaNegEV2, matrixLemma)
 									else:
 										matrixLemmaPosEV2 = updateCountMap(matrixLemmaPosEV2, matrixLemma)
@@ -247,7 +248,7 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 
 									if verboseMode:
 										if matrixLemma in verboseInvestigationSet:
-											if directlyBeforeMatrix in inteSet:
+											if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
 												# negated
 												outputEv2File.write("ev2 (negated):\t" + origSentence + "\n")
 											else:
