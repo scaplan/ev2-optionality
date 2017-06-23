@@ -81,6 +81,62 @@ def intersectionFiles(fileOne, fileTwo, outputFileOne, outputFileTwo):
 							outOne.write(fileOneLemmas[currLemma])
 
 
+def createLongFormFile(outputFileReadable, outputFileLongForm):
+	with open(outputFileReadable, 'r') as inputFile:
+		with open(outputFileLongForm, 'w') as outputFile:
+			outputFile.write('1.lemma,2.negated,3.raised,4.factive,5.category\n')
+			## Need to handle negation (and non-neg) cases
+			for currLine in inputFile:
+				if not currLine:
+					continue
+				currLineTokens = currLine.split()
+				if len(currLineTokens) == 0 or currLineTokens[0] == '1.lemma':
+					continue
+				lemma = currLineTokens[0]
+				count = int(currLineTokens[1])
+				diagnostic = int(currLineTokens[5])
+				countEV2 = int(currLineTokens[6])
+				negatedDignostic = int(currLineTokens[8])
+				nonnegDiagnostic = int(currLineTokens[9])
+				negatedEV2Count = int(currLineTokens[10])
+				nonNegEV2Count = int(currLineTokens[11])
+				category = currLineTokens[18]
+				factive = currLineTokens[19]
+
+				negatedNonRaisedCount = negatedDignostic - negatedEV2Count
+				nonnegNonRaisedCount = nonnegDiagnostic - nonNegEV2Count
+
+				if (diagnostic > 0):
+					negRaisedStr = lemma + ',negated,EV2,' + factive + ',' + category + '\n'
+					negInSituStr = lemma + ',negated,inSitu,' + factive + ',' + category + '\n'
+					nonnegRaisedStr = lemma + ',nonneg,EV2,' + factive + ',' + category + '\n'
+					nonnegInSituStr = lemma + ',nonneg,inSitu,' + factive + ',' + category + '\n'
+
+					for i in xrange(negatedEV2Count):
+						outputFile.write(negRaisedStr)
+					for i in xrange(negatedNonRaisedCount):
+						outputFile.write(negInSituStr)
+					for i in xrange(nonNegEV2Count):
+						outputFile.write(nonnegRaisedStr)
+					for i in xrange(nonnegNonRaisedCount):
+						outputFile.write(nonnegInSituStr)
+
+					# counter = 0
+					# while (counter < diagnostic):
+					# 	#print counter, diagnostic
+					# 	if counter < countEV2:
+					# 		outString = lemma + ',EV2,' + factive + ',' + category + '\n'
+					# 	#	print outString
+					# 		outputFile.write(outString)
+					# 	else:
+					# 		outString = lemma + ',inSitu,' + factive + ',' + category + '\n'
+					# 	#	print outString
+					# 		outputFile.write(outString)
+					# 	counter += 1
+					outputFile.flush()
+		outputFile.close()
+
+
 
 # iterate over inputData and append class info when retrived from lemmaMap (and just dashed when absent)
 # write these new lines to outputFile
@@ -90,17 +146,20 @@ def intersectionFiles(fileOne, fileTwo, outputFileOne, outputFileTwo):
 ##
 if __name__=="__main__":
 
-	if (len(sys.argv) != 4):
+	if (len(sys.argv) != 5):
 		print('incorrect number of arguments')
 		exit(0)
 
 	inputData = sys.argv[1]
 	classesData = sys.argv[2]
-	outputFile = sys.argv[3]
+	outputFileReadable = sys.argv[3]
+	outputFileLongForm = sys.argv[4]
 
 	#outTwo = sys.argv[4]
 
 	headerToAdd = readInLemmaClassInfo(classesData)
-	readInputFile(inputData, headerToAdd, outputFile)
+	readInputFile(inputData, headerToAdd, outputFileReadable)
+
+	createLongFormFile(outputFileReadable, outputFileLongForm)
 
 	#intersectionFiles(inputData, classesData, outputFile, outTwo)

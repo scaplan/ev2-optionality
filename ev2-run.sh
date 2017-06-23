@@ -1,10 +1,12 @@
 #!/bin/bash  
 
 scriptSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/'
+#scriptSource='/home/scaplan/Dropbox/penn_CS_account/ev2-optionality/'
 directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/'
 #directorySource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-corpora/flashback-politik/'
 #resultSource='/home1/s/spcaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
 resultSource='/mnt/nlpgridio2/nlp/users/spcaplan/swed-output-ev2/fixed-matrix-neg/'
+#resultSource='/home/scaplan/Dropbox/penn_CS_account/ev2-optionality/output/'
 #verbClassSource=$scriptSource'verb_classes_KDSC.csv'
 #verbClassSource=$scriptSource'verb_classes_lit_KDSC.csv'
 verbClassSource=$scriptSource'verb_classes_all_KDSC.csv'
@@ -32,6 +34,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	outputMatrixConditionsVerbFile=$resultSource$currCorpusName"_matrixVerbs-condition-relation.csv"
 	outputMatrixConditionsLemmaFile=$resultSource$currCorpusName"_matrixLemmas-condition-relation.csv"
 	outputMatrixConditionsLemmaFileWithClassInfo=$resultSource$currCorpusName"_matrixLemmas-condition-relation_withClassInfo_all.csv"
+	outputLongFormData=$resultSource$currCorpusName"_matrixLemmas--withClassInfo-all-longForm.csv"
 	outputInterveneFile=$resultSource$currCorpusName"_interveningMaterial.csv"
 	outputPlotVerbsFile=$resultSource$currCorpusName"_verbs_plot"
 	outputPlotLemmasFile=$resultSource$currCorpusName"_lemmas_plot"
@@ -43,7 +46,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	LAST_PID=$!
 	background_PID_list+=($LAST_PID)
 
-#	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo
+#	python merge_lemmas_with_classes.py $outputMatrixConditionsLemmaFile $verbClassSource $outputMatrixConditionsLemmaFileWithClassInfo $outputLongFormData
 	
 	### Matrix Negation Experiment
 #	matrixNegationOutputFile=$resultSource$currCorpusName"_matrixNegationSignificancetesting.txt"
@@ -58,12 +61,14 @@ for currCorpusName in "${corporaList[@]}"; do
 	verbClassPlot=$verbClassPlotRoot'_verbSemanticClass_plot.png'
 	verbClassOutput=$verbClassPlotRoot'_stats_output.txt'
 	
-	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot > $verbClassOutput
+#	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot > $verbClassOutput
+
+	Rscript verbPlotLongExp.R $outputLongFormData $currCorpusName $verbClassPlotRoot
 
 done
 
-for backgroun_PID in "${background_PID_list[@]}"; do
-	wait $backgroun_PID
+for background_PID in "${background_PID_list[@]}"; do
+	wait $background_PID
 done
 
 echo 'Completed'
