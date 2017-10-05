@@ -11,8 +11,6 @@ output_name = args[3]
 output_class_name = args[4]
 
 output_factives = paste(output_class_name,'_factive_vs_nonfactive_ev2Mean.png',sep="")
-output_sampleAssertNonAssert = paste(output_class_name,'_assert_vs_nonassert_negation_individualVerbs_ev2Mean.png',sep="")
-output_assertNonAssert = paste(output_class_name,'_assert_vs_nonassert_negation_ev2Mean.png',sep="")
 
 output_A_verbs = paste(output_class_name,'_A_verbs_ev2ByRank.png',sep="")
 output_B_verbs = paste(output_class_name,'_B_verbs_ev2ByRank.png',sep="")
@@ -21,7 +19,6 @@ output_D_verbs = paste(output_class_name,'_D_verbs_ev2ByRank.png',sep="")
 output_E_verbs = paste(output_class_name,'_E_verbs_ev2ByRank.png',sep="")
 
 ## Read in data
-#orig_csv = "C:\Users\\Spencer\\Documents\\ev2-temp-plot\\flashback-politik_matrixLemmas-condition-relation_withClassInfo_all.csv"
 data=read.csv(orig_csv,header=T,sep = "")
 
 output_title
@@ -72,59 +69,19 @@ cat(sprintf("assert_nonneg_raised: %s\n", assert_nonneg_raised))
 cat(sprintf("assert_nonneg_ev2: %s\n", assert_nonneg_ev2))
 
 
-# nonassert_neg_total_diagnostic = sum(nonassert_verbs$X9.NegatedCanTellIfRaised)
-# nonassert_neg_raised = sum(nonassert_verbs$X11.c.ev2.NegatedMatrix.)
-# nonassert_neg_ev2 = nonassert_neg_raised / assert_neg_total_diagnostic
-# cat(sprintf("nonassert_neg_total_diagnostic: %s\n", nonassert_neg_total_diagnostic))
-# cat(sprintf("nonassert_neg_raised: %s\n", nonassert_neg_raised))
-# cat(sprintf("nonassert_neg_ev2: %s\n", nonassert_neg_ev2))
+nonassert_neg_total_diagnostic = sum(nonassert_verbs$X9.NegatedCanTellIfRaised)
+nonassert_neg_raised = sum(nonassert_verbs$X11.c.ev2.NegatedMatrix.)
+nonassert_neg_ev2 = nonassert_neg_raised / assert_neg_total_diagnostic
+cat(sprintf("nonassert_neg_total_diagnostic: %s\n", nonassert_neg_total_diagnostic))
+cat(sprintf("nonassert_neg_raised: %s\n", nonassert_neg_raised))
+cat(sprintf("nonassert_neg_ev2: %s\n", nonassert_neg_ev2))
 
-# nonassert_nonneg_total_diagnostic = sum(nonassert_verbs$X10.nonNegCanTellIfRaised)
-# nonassert_nonneg_raised = sum(nonassert_verbs$X12.c.ev2.NonNegMatrix.)
-# nonassert_nonneg_ev2 = nonassert_nonneg_raised / nonassert_nonneg_total_diagnostic
-# cat(sprintf("nonassert_nonneg_total_diagnostic: %s\n", nonassert_nonneg_total_diagnostic))
-# cat(sprintf("nonassert_nonneg_raised: %s\n", nonassert_nonneg_raised))
-# cat(sprintf("nonassert_nonneg_ev2: %s\n", nonassert_nonneg_ev2))
-
-### Sig Testing
-ev2_assert = assert_verbs$X14.p.ev2.NonNegMatrix.
-ev2_negAssert = assert_verbs$X13.p.ev2.NegatedMatrix.
-wilcox.test(ev2_assert,ev2_negAssert, paired=FALSE)
-
-#ev2_nonassert = nonassert_verbs$X14.p.ev2.NonNegMatrix.
-#ev2_negnonAssert = nonassert_verbs$X13.p.ev2.NegatedMatrix.
-#wilcox.test(ev2_nonassert,ev2_negnonAssert, paired=FALSE)
-
-#x <- c('1.Volunteer Stance', '2.Volunteer Stance (Negated)', '3.Response Stance', '4.Response-Stance (Negated)')
-x <- c('1.Volunteer Stance', '2.Volunteer Stance (Negated)')
-#y <- c(assert_nonneg_ev2, assert_neg_ev2, nonassert_nonneg_ev2, nonassert_neg_ev2)
-y <- c(assert_nonneg_ev2, assert_neg_ev2)
-x_name <- "Stance"
-y_name <- "ev2"
-df <- data.frame(x,y)
-names(df) <- c(x_name,y_name)
-png(output_assertNonAssert, width=900, height=600)
-
-theme_set(theme_gray(base_size = 20))
-qplot(x=Stance, y=ev2, stat="identity", data=df, geom="bar", main=output_title, fill=factor(Stance)) + theme(legend.position="none") + 
-						coord_cartesian(ylim=c(0,0.20)) + ylab("p(ev2|matrix)")
-
-say <- data[data$X1.lemma == 'säga', ]
-think <- data[data$X1.lemma == 'tänka', ]
-know <- data[data$X1.lemma == 'veta', ]
-forget <- data[data$X1.lemma == 'glömma', ]
-
-x <- c('1.Say', '2.Not say', '3.Think', '4.Not think', '5.Know', '6.Not know', '7.Forget', '8.Not forget')
-y <- c(say$X14.p.ev2.NonNegMatrix., say$X13.p.ev2.NegatedMatrix., think$X14.p.ev2.NonNegMatrix., think$X13.p.ev2.NegatedMatrix., know$X14.p.ev2.NonNegMatrix., know$X13.p.ev2.NegatedMatrix., forget$X14.p.ev2.NonNegMatrix., forget$X13.p.ev2.NegatedMatrix.)
-x_name <- "Verb"
-y_name <- "ev2"
-df <- data.frame(x,y)
-names(df) <- c(x_name,y_name)
-png(output_sampleAssertNonAssert, width=900, height=600)
-
-theme_set(theme_gray(base_size = 20))
-qplot(x=Verb, y=ev2, stat="identity", data=df, geom="bar", main=output_title, fill=factor(Verb)) + theme(legend.position="none") + 
-						coord_cartesian(ylim=c(0,0.25)) + ylab("p(ev2|matrix)")
+nonassert_nonneg_total_diagnostic = sum(nonassert_verbs$X10.nonNegCanTellIfRaised)
+nonassert_nonneg_raised = sum(nonassert_verbs$X12.c.ev2.NonNegMatrix.)
+nonassert_nonneg_ev2 = nonassert_nonneg_raised / nonassert_nonneg_total_diagnostic
+cat(sprintf("nonassert_nonneg_total_diagnostic: %s\n", nonassert_nonneg_total_diagnostic))
+cat(sprintf("nonassert_nonneg_raised: %s\n", nonassert_nonneg_raised))
+cat(sprintf("nonassert_nonneg_ev2: %s\n", nonassert_nonneg_ev2))
 
 
 fact_verbs <- data[data$Factive == 'fact',]
@@ -222,17 +179,17 @@ qplot(x=Class, y=ev2, stat="identity", data=df, geom="bar", main=output_title, f
 
 # # also plot verb class ranks here
 png(output_A_verbs)
-plot(seq_along(a_verbs_ev2Sorted), unclass(a_verbs_ev2Sorted), xlab="Verb", xaxt='n', ylab="Proportion EV2", cex=1.5) + theme(text=element_text(size=20))
+plot(seq_along(a_verbs_ev2Sorted), unclass(a_verbs_ev2Sorted), xlab="Rank", ylab="P(ev2|matrix)", cex=1.5)
 title(main = "Rank vs. p(ev2) for Class A (say) verbs", cex=1.5)
 png(output_B_verbs)
-plot(seq_along(b_verbs_ev2Sorted), unclass(b_verbs_ev2Sorted), xlab="Rank", ylab="Proportion EV2")
+plot(seq_along(b_verbs_ev2Sorted), unclass(b_verbs_ev2Sorted), xlab="Rank", ylab="P(ev2|matrix)")
 title(main = "Rank vs. p(ev2) for Class B (believe) verbs", cex=1.5)
 png(output_C_verbs)
-plot(seq_along(c_verbs_ev2Sorted), unclass(c_verbs_ev2Sorted), xlab="Rank", ylab="Proportion EV2")
+plot(seq_along(c_verbs_ev2Sorted), unclass(c_verbs_ev2Sorted), xlab="Rank", ylab="P(ev2|matrix)")
 title(main = "Rank vs. p(ev2) for Class C (deny) verbs", cex=1.5)
 png(output_D_verbs)
-plot(seq_along(d_verbs_ev2Sorted), unclass(d_verbs_ev2Sorted), xlab="Rank", ylab="Proportion EV2")
+plot(seq_along(d_verbs_ev2Sorted), unclass(d_verbs_ev2Sorted), xlab="Rank", ylab="P(ev2|matrix)")
 title(main = "Rank vs. p(ev2) for Class D (resent) verbs", cex=1.5)
 png(output_E_verbs)
-plot(seq_along(e_verbs_ev2Sorted), unclass(e_verbs_ev2Sorted), xlab="Rank", ylab="Proportion EV2")
+plot(seq_along(e_verbs_ev2Sorted), unclass(e_verbs_ev2Sorted), xlab="Rank", ylab="P(ev2|matrix)")
 title(main = "Rank vs. p(ev2) for Class E (know) verbs", cex=1.5)

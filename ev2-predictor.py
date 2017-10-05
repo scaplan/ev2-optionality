@@ -226,12 +226,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								if precedeVerbWord in inteSet:
 									numOptionalNonEinSitu = numOptionalNonEinSitu + 1
 									if verboseMode:
-										if matrixLemma in verboseInvestigationSet:
-											if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
-												# negated
-												outputEv2File.write("inSitu (negated):\t" + origSentence + "\n")
-											else:
-												outputEv2File.write("inSitu (non-neg):\t" + origSentence + "\n")
+									#	if matrixLemma in verboseInvestigationSet:
+										if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
+											# negated
+											outputEv2File.write("inSitu (negated): --" + matrixLemma + "--\t" + origSentence + "\n")
+										else:
+											outputEv2File.write("inSitu (non-neg): --" + matrixLemma + "--\t" + origSentence + "\n")
 								else:
 									numOptionalEv2 += 1
 									matrixVerbeV2 = updateCountMap(matrixVerbeV2, matrixVerb)
@@ -247,12 +247,12 @@ def evalSentence(words, lemmas, tags, msds, sentenceWithTags, outputEv2File):
 								#	print 'interveneLength: ' + str(interveneLength) + '\n'
 
 									if verboseMode:
-										if matrixLemma in verboseInvestigationSet:
-											if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
-												# negated
-												outputEv2File.write("ev2 (negated):\t" + origSentence + "\n")
-											else:
-												outputEv2File.write("ev2 (non-neg):\t" + origSentence + "\n")
+									#	if matrixLemma in verboseInvestigationSet:
+										if directlyBeforeMatrix in inteSet or directlyAfterMatrix in inteSet:
+											# negated
+											outputEv2File.write("ev2 (negated): --" + matrixLemma + "--\t" + origSentence + "\n")
+										else:
+											outputEv2File.write("ev2 (non-neg): --" + matrixLemma + "--\t" + origSentence + "\n")
 							else:
 								cantTellRaised += 1
 						#	if verboseMode:
@@ -275,6 +275,12 @@ def updateCountMap(inputMap, inputEntry):
 	else:
 		inputMap[inputEntry] = 1
 	return inputMap
+
+def checkForQuotation(inputContent):
+	for word in inputContent:
+		if "\"" in word:
+			return True
+	return False
 
 def accessDictEntry(dictToCheck, entryToCheck):
 	if entryToCheck in dictToCheck:
@@ -384,6 +390,7 @@ if __name__=="__main__":
 	overtSubj = 0
 	proCasesOrMatrixCopula = 0
 	cantTellRaised = 0
+	sentencesWithQuotations = 0
 
 	allVerbFullTotalMap = {}
 	allLemmaFullTotalMap = {}

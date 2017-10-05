@@ -15,9 +15,10 @@ input="$1"
 
 declare -a corporaList
 #corporaList=("familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
-corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
+#corporaList=("flashback-politik" "academy-humanities" "attasidor" "familjeliv-allmanna-noje" "kubhist-gotlandstidning-1870" "kubhist-postochinrikestidning-1860" "familjeliv-adoption" "familjeliv-kansliga" "familjeliv-expert" "sweacsam" "rd-skfr" "rd-bet" "rd-ds" "rd-eun" "rd-fpm" "bloggmix-merged")
 #corporaList=("flashback-politik")
-#corporaList=("rd-bet")
+#corporaList=("flashback-politik" "familjeliv-allmanna-noje" "familjeliv-adoption" "familjeliv-kansliga" "rd-eun" "rd-fpm" "bloggmix-merged")
+corporaList=("rd-bet")
 #corporaList=($input)
 
 cd $scriptSource
@@ -62,7 +63,7 @@ for currCorpusName in "${corporaList[@]}"; do
 	verbClassOutput=$verbClassPlotRoot'_stats_output.txt'
 	
 #	Rscript plotVerbClasses.R $outputMatrixConditionsLemmaFileWithClassInfo $currCorpusName $verbClassPlot $verbClassPlotRoot > $verbClassOutput
-
+###
 	Rscript verbPlotLongExp.R $outputLongFormData $currCorpusName $verbClassPlotRoot
 
 done
